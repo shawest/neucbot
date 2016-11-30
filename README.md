@@ -1,6 +1,5 @@
 ==========================================================
-                     NeuCBOT v-1.0                      
-                     =============
+#                     NeuCBOT v-1.0                      
 Author: Shawn Westerdale
 Date: 30 Nov 2016
 github: https://github.com/shawest/neucbot
@@ -11,8 +10,8 @@ github: https://github.com/shawest/neucbot
 ## TABLE OF CONTENTS
 
 1. About NeuCBOT
-   i.  General
-   ii. Direcotry Structure
+..1. General
+..2. Direcotry Structure
 2. Setup
 3. Usage
 4. Citations
