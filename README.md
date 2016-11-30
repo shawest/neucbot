@@ -19,7 +19,7 @@ github: https://github.com/shawest/neucbot
 ----------------------------------------------------------
 1) About NeuCBOT
 ----------------------------------------------------------
-i. General
+### i. General
 
 NeuCBOT is a tool for calculating (alpha,n) yields and 
 neutron energy spectra for arbitrary materials under alpha
@@ -49,7 +49,7 @@ data for these isotopes from the ENSDF[2] database and
 saves them in a local database for future use.
 
 
-ii. Directory Structure
+### ii. Directory Structure
 
 Databases are stored in the ./Data directory. Within this 
 directory there are the following subdirectories:
@@ -89,9 +89,17 @@ You may also specify a step size to for integrating the alphas as they slow down
         -o [output file name]
 
 ----------------------------------------------------------
+2) Setup
+----------------------------------------------------------
+
+----------------------------------------------------------
+3) Usage
+----------------------------------------------------------
+
+----------------------------------------------------------
 4) Citations
 ----------------------------------------------------------
-[0] TALYS
-[1] SRIM
-[2] ENSDF
-[3] P. De Bievre and P.D.P. Taylor, Int. J. Mass Spectrom. Ion Phys. 123, 149 (1993).
+0. TALYS
+1. SRIM
+2. ENSDF
+3. P. De Bievre and P.D.P. Taylor, Int. J. Mass Spectrom. Ion Phys. 123, 149 (1993).
