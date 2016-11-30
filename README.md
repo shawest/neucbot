@@ -10,8 +10,8 @@ github: https://github.com/shawest/neucbot
 ## TABLE OF CONTENTS
 
 1. About NeuCBOT
-..1. General
-..2. Direcotry Structure
+⋅⋅1. General
+⋅⋅2. Direcotry Structure
 2. Setup
 3. Usage
 4. Citations
