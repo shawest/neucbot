@@ -2,12 +2,14 @@
 #                     NeuCBOT v-1.0                      
 
 Author: Shawn Westerdale
+Date: 30 Nov 2016
 github: https://github.com/shawest/neucbot
 ==========================================================
 
-NeuCBOT (Neutron Calculator Based On TALYS)
+# NeuCBOT (Neutron Calculator Based On TALYS)
 
-==TABLE OF CONTENTS==
+## TABLE OF CONTENTS
+
 1. About NeuCBOT
    i.  General
    ii. Direcotry Structure
