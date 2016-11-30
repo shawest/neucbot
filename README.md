@@ -1,5 +1,5 @@
 ==========================================================
-                      NeuCBOT v-1.0                      
+#                     NeuCBOT v-1.0                      
 
 Author: Shawn Westerdale
 github: https://github.com/shawest/neucbot
