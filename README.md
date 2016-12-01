@@ -86,7 +86,7 @@ subdirectory for each element, and a subdirectory within
 this subdirectory for each isotope of that element.
 
 Within an isotope's directory, there is a direcotry called
-NSpectra/ which contains outgoing neutrone energy spectra
+NSpectra/ which contains outgoing neutron energy spectra
 for alpha particles of a given energy undergoing the 
 (alpha,n) reaction on this isotope. 
 
@@ -116,7 +116,7 @@ clicking the "Clone or download" button and choosing
 command
 
 ```bash
-git clone git@github.com:shawest/neucbot.git
+git clone https://github.com/shawest/neucbot.git
 ```
 
 This will create a directory called neucbot in your current
@@ -177,7 +177,7 @@ NeuCBOT can be run from the command line of any unix-based
 operating system with the command
 
 ```bash
-./neucbot [list of options]
+./neucbot.py [list of options]
 ```
 where the list of options is a series of parameters given
 to NeuCBOT. Each option starts with a hyphen and is followed
@@ -215,11 +215,11 @@ Examples of alpha lists can be seen in ./AlphaLists/ where we include alpha ener
 Example usage of neucbot with both of these options is given below
 
 ```bash
-./neucbot -m Materials/Acrylic.dat -c Chains/Th232Chain.dat
+./neucbot.py -m Materials/Acrylic.dat -c Chains/Th232Chain.dat
 ```
 or
 ```
-./neucbot -m Materials/Acrylic.dat -l AlphaLists/Rn220Alphas.dat
+./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Rn220Alphas.dat
 ```
 
 It should be noted that the order of these options does not matter.
