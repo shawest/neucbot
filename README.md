@@ -10,17 +10,17 @@ github: https://github.com/shawest/neucbot
 
 ## TABLE OF CONTENTS
 
-1. About NeuCBOT
-  1. [General] (#general)
-  2. Direcotry Structure
-2. Setup
-  1. Accessing the code
-  2. Accessing (alpha,n) reaction databases
-3. Usage
-4. Citations
+1. [About NeuCBOT](#about)
+  1. [General](#general)
+  2. [Direcotry Structure](#directory-structure)
+2. [Setup](#setup)
+  1. [Accessing the code](#accessing-the-code)
+  2. [Accessing (alpha,n) reaction databases](#accessing-alphan-reaction-databases)
+3. [Usage](#usage)
+4. [Citations](#citations)
 
 ----------------------------------------------------------
-1) About NeuCBOT
+1) <a name="about>About NeuCBOT</a>
 ----------------------------------------------------------
 ### i. <a name="general">General</a>
 
@@ -52,7 +52,7 @@ data for these isotopes from the ENSDF[2] database and
 saves them in a local database for future use.
 
 
-### ii. Directory Structure
+### ii. <a name="directory-structure">Directory Structure</a>
 
 Databases are stored in the ./Data directory. Within this 
 directory there are the following subdirectories:
@@ -82,9 +82,9 @@ wishing to explore gammas that may be correlated with
 (alpha,n) neutrons.
 
 ----------------------------------------------------------
-2) Setup
+2) <a name="setup">Setup</a>
 ----------------------------------------------------------
-### i. Accessing the code
+### i. <a name="accessing-the-code">Accessing the code</a>
 
 The code for NeuCBOT is stored in 
 <https://github.com/shawest/neucbot>.
@@ -101,7 +101,7 @@ git clone git@github.com:shawest/neucbot.git
 This will create a directory called neucbot in your current
 directory.
 
-### ii. Accessing (alpha,n) reaction databases
+### ii. <a name="accessing-alphan-reaction-databases">Accessing (alpha,n) reaction databases</a>
 
 There are two options for obtaining (alpha,n) reaction 
 databases.
@@ -146,7 +146,7 @@ The TALYS software can be downloaded from the homepage at
 <http://www.talys.eu/>
 
 ----------------------------------------------------------
-3) Usage
+3) <a name="usage">Usage</a>
 ----------------------------------------------------------
 Usage: You must specify an alpha list or decay chain file and a target material file.
 You may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV
@@ -158,7 +158,7 @@ You may also specify a step size to for integrating the alphas as they slow down
         -o [output file name]
 
 ----------------------------------------------------------
-4) Citations
+4) <a name="citations">Citations</a>
 ----------------------------------------------------------
 0. TALYS
 1. SRIM
