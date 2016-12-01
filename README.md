@@ -163,8 +163,8 @@ A list of arguments is given below, follwed by parameters
 required by that option (written in square brackets) and
 a description of what that option does in parentheses.
 
-* -h [<i>no arguments</i>] (print help message)
-* -l [alpha list file name] (file with a list of alpha energies to be used)
+* -h \[<i>no arguments</i>\] (print help message)
+* -l \[alpha list file name\] (file with a list of alpha energies to be used)
 * -c [decay chain file name] (file with a list of alpha-emitting contaminants)
 * -m [material composition file name] (file with a description of the material composition)
 * -s [alpha step size in MeV] (the step size to be used when integrating over the alpha energy, minimum of 0.01)
