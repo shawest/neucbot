@@ -61,10 +61,10 @@ saves them in a local database for future use.
 Databases are stored in the ./Data directory. Within this 
 directory there are the following subdirectories:
 
- ./Data/StopingPowers/ : SRIM-generated stopping powers for each element
- ./Data/Decays/        : Downloaded ENSDF files with alpha decay data for given isotopes
- ./Data/abundances.dat : Natural abundances of every isotope, from [3]
- ./Data/Isotopes/      : TALYS-generated (alpha,n) reaction data library
+* ./Data/StopingPowers/ : SRIM-generated stopping powers for each element
+* ./Data/Decays/        : Downloaded ENSDF files with alpha decay data for given isotopes
+* ./Data/abundances.dat : Natural abundances of every isotope, from [3]
+* ./Data/Isotopes/      : TALYS-generated (alpha,n) reaction data library
 
 Within the ./Data/Isotopes/ directory, there is a 
 subdirectory for each element, and a subdirectory within 
