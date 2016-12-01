@@ -12,7 +12,7 @@ github: https://github.com/shawest/neucbot
 
 1. [About NeuCBOT](#about)
   1. [General](#general)
-  2. [Direcotry Structure](#directory-structure)
+  2. [Directory Structure](#directory-structure)
 2. [Setup](#setup)
   1. [Accessing the code](#accessing-the-code)
   2. [Accessing (alpha,n) reaction databases](#accessing-alphan-reaction-databases)
@@ -148,14 +148,27 @@ The TALYS software can be downloaded from the homepage at
 ----------------------------------------------------------
 3) <a name="usage">Usage</a>
 ----------------------------------------------------------
-Usage: You must specify an alpha list or decay chain file and a target material file.
-You may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV
-        -l [alpha list file name]
-        -c [decay chain file name]
-        -m [material composition file name]
-        -s [alpha step size in MeV]
-        -t (to run TALYS for reactions not in libraries)
-        -o [output file name]
+
+NeuCBOT can be run from the command line of any unix-based
+operating system with the command
+
+```bash
+./neucbot [list of options]
+```
+where the list of options is a series of parameters given
+to NeuCBOT. Each option starts with a hyphen and is followed
+by any arugments needed by that option.
+
+A list of arguments is given below, follwed by parameters
+required by that option (written in square brackets) and
+a description of what that option does in parentheses.
+
+* -l [alpha list file name]
+* -c [decay chain file name]
+* -m [material composition file name]
+* -s [alpha step size in MeV]
+* -t (to run TALYS for reactions not in libraries)
+* -o [output file name]
 
 ----------------------------------------------------------
 4) <a name="citations">Citations</a>
