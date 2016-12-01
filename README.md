@@ -17,6 +17,10 @@ github: https://github.com/shawest/neucbot
   1. [Accessing the code](#accessing-the-code)
   2. [Accessing (alpha,n) reaction databases](#accessing-alphan-reaction-databases)
 3. [Usage](#usage)
+  1. [The Basics](#basics)
+  2. [Material Composition Files](#material-composition)
+  3. [Isotope List Files](#isotope-lists)
+  4. [Alpha List Files](#alpha-lists)
 4. [Citations](#citations)
 
 ----------------------------------------------------------
@@ -148,6 +152,7 @@ The TALYS software can be downloaded from the homepage at
 ----------------------------------------------------------
 3) <a name="usage">Usage</a>
 ----------------------------------------------------------
+### i. <a name="basics">The Basics</a>
 
 NeuCBOT can be run from the command line of any unix-based
 operating system with the command
@@ -174,6 +179,79 @@ a description of what that option does in parentheses.
 * --print-alphas-only \[<i>no arguments</i>\] (same as --print-alphas, but aborts after printing)
 * --force-recalculation \[<i>no arguments</i>\] (if TALYS is installed in your machine, run it for each alpha energy and each isotope, overwriting pre-existing entries in the database if necessary)
 
+In order to run NeuCBOT, the user must provide a material description (-m material_file_name) and either an alpha energy list (-l alpha_list_name) OR a list of contaminants in your decay chain of interest (-c contaminants_list_name).
+
+All other options are optional. 
+
+If the -o option is not specified, all output will be displayed to the terminal. 
+
+If the -s option is not specified, a default step size of 0.01 MeV will be assumed.
+
+NeuCBOT comes with acrylic as an example material, stored in ./Materials/Acrylic.dat. 
+
+We also provide the <sup>232</sup>Th, <sup>235</sup>U, and upper and lower <sup>238</sup>U decay chains (split above <sup>226</sup>Ra), as well as the <sup>210</sup>Pb decay chain as example decay chains. These chains are stored in ./Chains/.
+
+Examples of alpha lists can be seen in ./AlphaLists/ where we include alpha energies emitted by several isotopes found in the decay chains.
+
+Example usage of neucbot with both of these options is given below
+
+```bash
+./neucbot -m Materials/Acrylic.dat -c Chains/Th232Chain.dat
+```
+or
+```
+./neucbot -m Materials/Acrylic.dat -l AlphaLists/Rn220Alphas.dat
+```
+
+It should be noted that the order of these options does not matter.
+
+If any isotopes listed in the material composition description are
+not present in the (alpha,n) reaction library, NeuCBOT will throw
+an error.
+
+### ii. <a name="material-composition">Material Composition Files</a>
+This section describes the anatomy of a material composition 
+file. One such file must be given to NeuCBOT as an argument to
+the -m option.
+
+These text files consist of three columns. 
+
+The first column is the chemical symbol of an element in 
+the material. Capitalization does not matter.
+
+The second column is the mass number of this isotope. If
+0 is specified, it will be assumed that all naturally 
+occurring isotopes of this element are present at their
+natural abundances, as reported in [3].
+
+The third column is the <b>percent mass</b> of the specified
+element or isotope.
+
+For example
+'''
+c 12 45
+c 13 55
+'''
+would describe a material that is made of 45% <sup>12</sup>C
+and 55% <sup>13</sup>C, by mass.
+
+More realistically,
+'''
+c 0 59.984
+o 0 31.962
+h 0 8.054
+'''
+is the composition of acrylic, assuming carbon, oxygen, and
+hydrogen isotopes are all present according to their natural
+abundances.
+
+All lines in this file that start with a \# are skipped
+by NeuCBOT, allowing the user to leave comments in these 
+files.
+
+### iii. <a name="isotope-lists">Isotope List Files</a>
+
+### iv. <a name="alpha-lists">Alpha List Files</a>
 ----------------------------------------------------------
 4) <a name="citations">Citations</a>
 ----------------------------------------------------------
