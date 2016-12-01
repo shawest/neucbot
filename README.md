@@ -228,19 +228,18 @@ The third column is the <b>percent mass</b> of the specified
 element or isotope.
 
 For example
-"""
-c 12 45
-c 13 55
-"""
+> c 12 45
+> c 13 55
+
 would describe a material that is made of 45% <sup>12</sup>C
 and 55% <sup>13</sup>C, by mass.
 
 More realistically,
-"""
-c 0 59.984
-o 0 31.962
-h 0 8.054
-"""
+
+> c 0 59.984
+> o 0 31.962
+> h 0 8.054
+
 is the composition of acrylic, assuming carbon, oxygen, and
 hydrogen isotopes are all present according to their natural
 abundances.
