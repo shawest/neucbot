@@ -14,6 +14,8 @@ github: https://github.com/shawest/neucbot
   1. General
   2. Direcotry Structure
 2. Setup
+  1. Accessing the code
+  2. Accessing (alpha,n) reaction databases
 3. Usage
 4. Citations
 
@@ -82,6 +84,8 @@ wishing to explore gammas that may be correlated with
 ----------------------------------------------------------
 2) Setup
 ----------------------------------------------------------
+### i. Accessing the code
+
 The code for NeuCBOT is stored in 
 <https://github.com/shawest/neucbot>.
 
@@ -95,7 +99,10 @@ git clone git@github.com:shawest/neucbot.git
 ```
 
 This will create a directory called neucbot in your current
-directory. To run NeuCBOT, you must either have TALYS 
+directory.
+
+### ii. Accessing (alpha,n) reaction databases
+To run NeuCBOT, you must either have TALYS 
 installed in your local machine and run NeuCBOT with the -t
 option to run TALYS and generate your own nuclear reaction
 library, or you can download the libraries for 
