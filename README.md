@@ -273,11 +273,17 @@ As an example, the <sup>232</sup>Th decay chain is specified
 as
 
 > Th232 100
+>
 > Th228 100
+>
 > Ra224 100
+>
 > Rn220 100
+>
 > Po216 100
+>
 > Bi212 35.94
+>
 > Po212 64.06
 
 ### iv. <a name="alpha-lists">Alpha List Files</a>
