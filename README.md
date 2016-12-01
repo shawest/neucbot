@@ -2,6 +2,8 @@
 #                     NeuCBOT v-1.0                      
 Author: Shawn Westerdale
 
+email: shawest@physics.carleton.ca
+
 Date: 30 Nov 2016
 
 github: https://github.com/shawest/neucbot
@@ -97,6 +99,8 @@ for producing various excited nuclei and gammas at various
 energies. These files may be of particular interest to people
 wishing to explore gammas that may be correlated with 
 (alpha,n) neutrons.
+
+For questions or comments, feel free to send me an email.
 
 ----------------------------------------------------------
 2) <a name="setup">Setup</a>
