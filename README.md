@@ -26,6 +26,7 @@ github: https://github.com/shawest/neucbot
 ----------------------------------------------------------
 1) <a name="about>About NeuCBOT</a>
 ----------------------------------------------------------
+
 ### i. <a name="general">General</a>
 
 NeuCBOT is a tool for calculating (alpha,n) yields and 
@@ -139,7 +140,9 @@ where X is the chemical symbol of the element.
 
 Alternatively, you can generate your own database,if you 
 have TALYS installed on your computer. To do so, run 
-NeuCBOT with the -t option. 
+NeuCBOT with the -t option. Doing so will save input files
+in a directory called TalysInput, in the isotope's database
+directory.
 
 This option allows you to calculate (alpha,n) yields and
 spectra for isotopes and alpha energies not included in
