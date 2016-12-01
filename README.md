@@ -286,7 +286,28 @@ as
 >
 > Po212 64.06
 
+Similar to the material composition description, lines that
+start with a \# are skipped by NeuCBOT.
+
 ### iv. <a name="alpha-lists">Alpha List Files</a>
+Alpha list files are structured very similiarly to isotope 
+list files.
+
+Each text file has two columns. The first column specifies
+an alpha energy in MeV, and the second column specifies the 
+<b>percent</b> porbability of an alpha of that energy being
+produced.
+
+For example, <sup>216</sup>Po alphas can be described with
+a file that reads as
+
+> 6.7783 99.9981
+>
+> 5.985 0.0019
+
+Like in the two above cases, lines that start with a \# 
+are skipped by NeuCBOT.
+
 ----------------------------------------------------------
 4) <a name="citations">Citations</a>
 ----------------------------------------------------------
