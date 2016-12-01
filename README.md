@@ -163,12 +163,16 @@ A list of arguments is given below, follwed by parameters
 required by that option (written in square brackets) and
 a description of what that option does in parentheses.
 
-* -l [alpha list file name]
-* -c [decay chain file name]
-* -m [material composition file name]
-* -s [alpha step size in MeV]
-* -t (to run TALYS for reactions not in libraries)
-* -o [output file name]
+* -h [<i>no arguments</i>] (print help message)
+* -l [alpha list file name] (file with a list of alpha energies to be used)
+* -c [decay chain file name] (file with a list of alpha-emitting contaminants)
+* -m [material composition file name] (file with a description of the material composition)
+* -s [alpha step size in MeV] (the step size to be used when integrating over the alpha energy, minimum of 0.01)
+* -t [<i>no arguments</i>] (tells NeuCBOT to run TALYS for reactions not in libraries)
+* -o [output file name] (name of text file to store output to)
+* --print-alphas [<i>no arguments</i> (prints a list of alpha energies being used)
+* --print-alphas-only [<i>no arguments</i>] (same as --print-alphas, but aborts after printing)
+* --force-recalculation [<i>no arguments</i>] (if TALYS is installed in your machine, run it for each alpha energy and each isotope, overwriting pre-existing entries in the database if necessary)
 
 ----------------------------------------------------------
 4) <a name="citations">Citations</a>
