@@ -11,7 +11,7 @@ github: https://github.com/shawest/neucbot
 ## TABLE OF CONTENTS
 
 1. About NeuCBOT
-  1. General
+  1. General (#general)
   2. Direcotry Structure
 2. Setup
   1. Accessing the code
