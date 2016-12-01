@@ -224,7 +224,7 @@ The second column is the mass number of this isotope. If
 occurring isotopes of this element are present at their
 natural abundances, as reported in [3].
 
-The third column is the <b>percent mass</b> of the specified
+The third column is the percent mass of the specified
 element or isotope.
 
 For example
@@ -247,11 +247,38 @@ is the composition of acrylic, assuming carbon, oxygen, and
 hydrogen isotopes are all present according to their natural
 abundances.
 
+After reading a material composition file, NeuCBOT normalizes
+the composition so that all isotopes add up to 100%. The
+user may therefore specify mass fractions as percentages or
+decimals, as they prefer.
+
 All lines in this file that start with a \# are skipped
 by NeuCBOT, allowing the user to leave comments in these 
 files.
 
 ### iii. <a name="isotope-lists">Isotope List Files</a>
+Decay chains are specified in text files with two columns.
+
+The first column specifies the name of the isotope, which
+is the chemical symbol followed by the mass number, and
+the second column is the percent of decays of the chain
+in which the specified isotope occurs, relative to the 
+top of the chain.
+
+It is important to note that the second column must be
+given in <b>percent</b> probability of the isotope 
+appearing.
+
+As an example, the <sup>232</sup>Th decay chain is specified
+as
+
+> Th232 100
+> Th228 100
+> Ra224 100
+> Rn220 100
+> Po216 100
+> Bi212 35.94
+> Po212 64.06
 
 ### iv. <a name="alpha-lists">Alpha List Files</a>
 ----------------------------------------------------------
