@@ -133,11 +133,17 @@ command
 ```
 where X is the chemical symbol of the element.
 
-To run NeuCBOT, you must either have TALYS 
-installed in your local machine and run NeuCBOT with the -t
-option to run TALYS and generate your own nuclear reaction
-library, or you can download the libraries for 
+Alternatively, you can generate your own database,if you 
+have TALYS installed on your computer. To do so, run 
+NeuCBOT with the -t option. 
 
+This option allows you to calculate (alpha,n) yields and
+spectra for isotopes and alpha energies not included in
+this database, though it should be noted that this will 
+typically slow down the code.
+
+The TALYS software can be downloaded from the homepage at
+<http://www.talys.eu/>
 
 ----------------------------------------------------------
 3) Usage
