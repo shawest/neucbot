@@ -79,7 +79,31 @@ energies. These files may be of particular interest to people
 wishing to explore gammas that may be correlated with 
 (alpha,n) neutrons.
 
+----------------------------------------------------------
+2) Setup
+----------------------------------------------------------
+The code for NeuCBOT is stored in 
+<https://github.com/shawest/neucbot>.
 
+To access the code, you can either download it directly by 
+clicking the "Clone or download" button and choosing 
+"Download ZIP", or checking out the repository with the 
+command
+
+```bash
+git clone git@github.com:shawest/neucbot.git
+```
+
+This will create a directory called neucbot in your current
+directory. To run NeuCBOT, you must either have TALYS 
+installed in your local machine and run NeuCBOT with the -t
+option to run TALYS and generate your own nuclear reaction
+library, or you can download the libraries for 
+
+
+----------------------------------------------------------
+3) Usage
+----------------------------------------------------------
 Usage: You must specify an alpha list or decay chain file and a target material file.
 You may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV
         -l [alpha list file name]
@@ -88,14 +112,6 @@ You may also specify a step size to for integrating the alphas as they slow down
         -s [alpha step size in MeV]
         -t (to run TALYS for reactions not in libraries)
         -o [output file name]
-
-----------------------------------------------------------
-2) Setup
-----------------------------------------------------------
-
-----------------------------------------------------------
-3) Usage
-----------------------------------------------------------
 
 ----------------------------------------------------------
 4) Citations
