@@ -102,6 +102,37 @@ This will create a directory called neucbot in your current
 directory.
 
 ### ii. Accessing (alpha,n) reaction databases
+
+There are two options for obtaining (alpha,n) reaction 
+databases.
+
+Databases for all naturally occurring isotopes ranging from
+0 to 10 MeV alpha energies have been precompiled. These 
+databases have been grouped together by element are are 
+storred as gzipped tarballs on github at
+
+<https://github.com/neucbot-datasets>
+
+Databases can be downloaded from this github repository and
+unzipped with the command
+```bash
+tar -xvzf X.tar.gz
+```
+where X is the chemical symbol of the element. These unzipped
+files should be stored in ./Data/Isotopes/ in order to be
+read by NeuCBOT.
+
+For convenience, NeuCBOT comes with a bash script in the 
+./Scripts directory called download_element.sh. This script
+takes the chemical symbol of an element as an argument, and
+downloads the database for that element, setting it up 
+properly. This script can be run from ./neucbot with the
+command
+```bash
+./Scripts/download_element.sh X
+```
+where X is the chemical symbol of the element.
+
 To run NeuCBOT, you must either have TALYS 
 installed in your local machine and run NeuCBOT with the -t
 option to run TALYS and generate your own nuclear reaction
