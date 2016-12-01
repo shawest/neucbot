@@ -11,7 +11,7 @@ github: https://github.com/shawest/neucbot
 ## TABLE OF CONTENTS
 
 1. About NeuCBOT
-  1. General (#general)
+  1. [General] (#general)
   2. Direcotry Structure
 2. Setup
   1. Accessing the code
@@ -22,7 +22,7 @@ github: https://github.com/shawest/neucbot
 ----------------------------------------------------------
 1) About NeuCBOT
 ----------------------------------------------------------
-### [i. General](#general)
+### i. [General](#general)
 
 NeuCBOT is a tool for calculating (alpha,n) yields and 
 neutron energy spectra for arbitrary materials under alpha
