@@ -260,14 +260,15 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         runTALYS(int(100*e_a)/100.,ele,A)
            
     # If the file does not exist, run TALYS
-    if constants.run_talys:
-        while not os.path.exists(fname):
-            print 'Running TALYS for', int(100*e_a)/100., 'alpha on', target
-            print 'Outpath', outpath
-            runTALYS(int(100*e_a)/100.,ele,A)
-    else:
-        print "Warning, no (alpha,n) data found for E_a = ", e_a," MeV on target ", target,"...skipping"
-        return {}
+    if not os.path.exists(fname):
+        if constants.run_talys:
+            while not os.path.exists(fname):
+                print 'Running TALYS for', int(100*e_a)/100., 'alpha on', target
+                print 'Outpath', outpath
+                runTALYS(int(100*e_a)/100.,ele,A)
+        else:
+            print "Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping"
+            return {}
     
     # Load the file
     # If no output was produced, skip this energy
