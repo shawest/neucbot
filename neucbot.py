@@ -21,6 +21,7 @@ class constants:
     run_talys  = False
     run_alphas = True
     print_alphas = False
+    download_data = False
     force_recalculation = False
 
 class material:
@@ -443,7 +444,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         print e, newspec[e]
 
 def help_message():
-    print 'Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-o [output file name]'
+    print 'Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database)\n\t-o [output file name]'
 
 def main():
     alpha_list = []
@@ -472,6 +473,8 @@ def main():
             return 0
         if arg == '-t':
             constants.run_talys = True
+        if arg == '-d':
+            constants.download_data = True
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
@@ -499,6 +502,13 @@ def main():
         for alph in alpha_list:
             print alph[0],'&', alph[1],'\\\\'
 
+    if constants.download_data:
+        for mat in mat_comp:
+            ele = mat.ele
+            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
+                print '\tDownloading data for',ele
+                bashcmd = './Scripts/download_element.sh ' + ele
+                process = subprocess.call(bashcmd,shell=True)              
     if constants.run_alphas:
         print 'Running alphas:'
         run_alpha(alpha_list, mat_comp, alpha_step_size)

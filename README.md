@@ -193,6 +193,7 @@ a description of what that option does in parentheses.
 * -m \[material composition file name] (file with a description of the material composition)
 * -s \[alpha step size in MeV\] (the step size to be used when integrating over the alpha energy, minimum of 0.01)
 * -t \[<i>no arguments</i>\] (tells NeuCBOT to run TALYS for reactions not in libraries)
+* -d \[<i>no arguments</i>\] (if an element is missing from the (alpha,n) database, automatically run the download_element.sh script to download the element's database)
 * -o \[output file name\] (name of text file to store output to)
 * --print-alphas \[<i>no arguments</i>\] (prints a list of alpha energies being used)
 * --print-alphas-only \[<i>no arguments</i>\] (same as --print-alphas, but aborts after printing)
