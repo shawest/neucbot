@@ -268,7 +268,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
                 print 'Outpath', outpath
                 runTALYS(int(100*e_a)/100.,ele,A)
         else:
-            print "Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping"
+            print "Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options"
             return {}
     
     # Load the file
@@ -418,8 +418,6 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             prefactors = (intensity/100.)*mat_term*delta_ea/stopping_power
-            norm = 1
-            prefactors *= norm
             xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)
             total_xsect += xsect
             matname = str(mat.ele)+str(mat.A)
@@ -437,9 +435,9 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     # print out total spectrum
     newspec = spec_tot
     print '# Total neutron yield = ', total_xsect, ' n/decay' 
-    print '# Integral of spectrum = ', integrate(newspec), " n/decay"
     for x in sorted(xsects):
         print '\t',x,xsects[x]
+    print '# Integral of spectrum = ', integrate(newspec), " n/decay"
     for e in sorted(newspec):
         print e, newspec[e]
 

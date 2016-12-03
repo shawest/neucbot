@@ -24,7 +24,8 @@ github: https://github.com/shawest/neucbot
   2. [Material Composition Files](#material-composition)
   3. [Isotope List Files](#isotope-lists)
   4. [Alpha List Files](#alpha-lists)
-4. [Citations](#citations)
+4. [Output](#Output)
+5. [Citations](#citations)
 
 ----------------------------------------------------------
 1) <a name="about">About NeuCBOT</a>
@@ -329,7 +330,22 @@ Like in the two above cases, lines that start with a \#
 are skipped by NeuCBOT.
 
 ----------------------------------------------------------
-4) <a name="citations">Citations</a>
+4) <a name="output">Output</a>
+----------------------------------------------------------
+The output of NeuCBOT is hopefully mostly staightforward to understand. 
+
+As NeuCBOT runs, it prints the alpha energy every 10 keV, so its progress can be tracked. It will also output any relevant warnings it may encounter while running. The most likely warnings will be missing isotopic data in the (alpha,n) database. If the alpha energies simulated are all under 10 MeV and only naturally occuring isotopes are being simulated, the simplest solution is to run NeuCBOT with the -d option, an it will acquire (alpha,n) data automatically. Otherwise, the user should install TALYS and run with the -t option.
+
+The output provides the total neutron yield, calculated by integrating all of (alpha,n) cross sections over the tracks of the alphas as they slow down. The units used here are the number of neutrons produced per decay of the entire decay chain or list of alpha energies being simulated. So if a chain has three alpha-emitting isotopes, NeuCBOT tells you the expected number of neutrons after all three isotopes have decayed with their given branching ratios.
+
+NeuCBOT also gives a breakdown of the contribution of each isotope in the target material to the total neutron yield.
+
+Due to effects of binning the neutron energy spectrum and inaccuracies of Riemann integration, it is possible that the integral of the neutron energy spectrum will be slightly different from the total neutron yield. These differences are typically under ~1%. We therefore include the integral of the neutron energy spectrum in the output.
+
+Lastly, the neutron energy spectrum is printed. By default, the spectrum is binned into 100 keV bins and the spectrum is given in units of neutron/decay/100 keV.
+
+----------------------------------------------------------
+5) <a name="citations">Citations</a>
 ----------------------------------------------------------
 0. <a name="1">A. Koning, et al. TALYS-1.6. http://www.talys.eu/</a>
 1. <a name="2">J. Ziegler, et al. SRIM-2008. http://www.srim.org/</a>
