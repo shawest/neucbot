@@ -1,5 +1,6 @@
 #!/bin/bash
-_ele=$1
+inp=$1
+_ele=${inp%%[0-9]*}
 ele=${_ele,,}
 Ele=${_ele^}
 dir=$PWD

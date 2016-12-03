@@ -153,7 +153,9 @@ command
 ```bash
 ./Scripts/download_element.sh X
 ```
-where X is the chemical symbol of the element.
+where X is the chemical symbol of the element. 
+
+If NeuCBOT is run with the -d option, it will automatically run this script for each element missing from your local database.
 
 Alternatively, you can generate your own database,if you 
 have TALYS installed on your computer. To do so, run 
