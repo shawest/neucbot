@@ -436,8 +436,8 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
 
     # print out total spectrum
     newspec = spec_tot
-    print '# Total integrated rate = ', integrate(newspec), " n/decay"
-    print '# From read rate = ', total_xsect, ' n/decay' 
+    print '# Total neutron yield = ', total_xsect, ' n/decay' 
+    print '# Integral of spectrum = ', integrate(newspec), " n/decay"
     for x in sorted(xsects):
         print '\t',x,xsects[x]
     for e in sorted(newspec):
