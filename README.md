@@ -39,6 +39,7 @@ presence of alpha-emitting contaminants.
 
 The underlying physics, calculations, and validation of this
 code is presented in
+
 [S. Westerdale, _A Study of Nuclear Recoil Backgrounds in Dark Matter Detectors_, Ph.D. thesis, Princeton University (2016)](http://web.archive.org/web/20161216231000/https://www.princeton.edu/physics/graduate-program/theses/Westerdalethesis.pdf)
 
 The core of the calculations performed with this tool is 
