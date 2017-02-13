@@ -39,7 +39,8 @@ presence of alpha-emitting contaminants.
 
 The underlying physics, calculations, and validation of this
 code is presented in
-
+[S. Westerdale, P.D. Meyers, _Radiogenic Neutron Yield Calculations for Low Background Experiments_, arXiv:1702.02465, 6 Feb 2017](https://arxiv.org/abs/1702.02465)
+and
 [S. Westerdale, _A Study of Nuclear Recoil Backgrounds in Dark Matter Detectors_, Ph.D. thesis, Princeton University (2016)](http://web.archive.org/web/20161216231000/https://www.princeton.edu/physics/graduate-program/theses/Westerdalethesis.pdf)
 
 The core of the calculations performed with this tool is 

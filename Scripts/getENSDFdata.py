@@ -5,6 +5,18 @@ import sys
 import chemistry
 import socket
 from urllib2 import Request
+from sgmllib import SGMLParser
+
+class URLLister(SGMLParser):
+  def reset(self):
+    SGMLParser.reset(self)
+    self.urls = []
+
+  def start_a(self, attrs):
+    href = [v for k, v in attrs if k=='href']
+    if href:
+      self.urls.extend(href)
+
 
 def getPage(url, ele, A):
     dir = './Data/Decays/'
@@ -25,20 +37,26 @@ def getPage(url, ele, A):
 
 def getURL(ele, A):
     Z = chemistry.getZ(ele)
-#208082005'
-#    url = 'http://www.nndc.bnl.gov/nudat2/getdecaydataset.jsp?nucleus='
     dau_A = A - 4
     dau_Z = Z-2
     dau_ele = chemistry.getElement(dau_Z)
-    dataset = 0
-    while True :
-        if dataset == 0:
-            url = 'http://www.nndc.bnl.gov/chart/getdecaydataset.jsp?nucleus='+str(dau_A)+dau_ele.upper()+'&dsid='+str(A)+ele.lower()+'%20a%20decay%20(3.098%20m)'
-        else:
-            url = 'http://www.nndc.bnl.gov/ensdf/EnsdfDispatcherServlet?dbclass=ensdf&dataset_table=dataset_table&pagesource=singular&chooseit=View%20in%20ENSDF%20format&datasetcheck={0:03d}{1:03d}{2:03d}'.format(dau_A,dau_Z,dataset)
 
-        dataset = dataset+1        
-        print url
+    nndc_url = 'http://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    nndc_page = urllib2.urlopen(nndc_url,timeout=3)
+    parser = URLLister()
+    parser.feed(nndc_page.read())
+    parser.close()
+    nndc_page.close()
+    url_ends = []
+    for a_url in parser.urls: 
+        mod_url = re.sub(' ','%20',a_url)
+        if re.search('getdecaydataset',mod_url) and re.search('a%20decay',mod_url):
+            url_ends.append(mod_url)
+
+    for url_end in url_ends:        
+        url = 'http://www.nndc.bnl.gov/chart/' + url_end
+
+        print 'Retrieving ENSDF data from:\t',url
         req = Request(url)
         page = ''
         try:
@@ -47,13 +65,17 @@ def getURL(ele, A):
             print "ERROR: TIMEOUT"
             print url
 
-        if page == '':
-            return 'http://www.nndc.bnl.gov/ensdf/EnsdfDispatcherServlet?dbclass=ensdf&dataset_table=dataset_table&pagesource=singular&chooseit=View%20in%20ENSDF%20format&datasetcheck=231092001'
-                
         text = re.sub('<.*>','',page.read())
+
+        # Check that this page is for an alpha decay
         is_adecay = re.search(" A DECAY",text)
         if not is_adecay:
             continue
+        adecay_pos = text.find("A DECAY")
+        if adecay_pos > 0 and adecay_pos < 30 :
+            break
+
+        # Prune the page and check that it might have interesting content
         if re.search('[0-9]',text) :
             text = text[re.search('[0-9]',text).start():]
         else :
@@ -61,20 +83,16 @@ def getURL(ele, A):
         if len(text) < 30 :
             print 'WARNING: Could not find alpha for ele = {}, A = {}'.format(ele,A)
             break
-        adecay_pos = text.find("A DECAY")
-#        if text[15] == 'A':
-        if adecay_pos > 0 and adecay_pos < 30 :
+
+        # Check that this page is for a ground state decay
+        level = 0
+        for line in text.split('\n'):
+            if len(line) > 8 and line[6] == ' ' and line[7] == 'P':
+                level = line.split()[2]
+        if level == '0.0': 
             break
 
-#    url += str(dau_A)
-#    url += dau_ele.upper()
-#    url += '&dsid='
-#    url += str(A)
-#    url += ele.lower()
-#    url += '%20a%20decay'
     return url
-
-#getPage('http://www.nndc.bnl.gov/nudat2/getdecaydataset.jsp?nucleus=237NP&dsid=241am%20a%20decay')
 
 def main(argv):
     if(len(argv) != 3):

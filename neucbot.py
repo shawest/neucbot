@@ -49,7 +49,7 @@ def generateAlphaFileName(ele,A):
     return fName
 
 def generateAlphaList(ele, A):
-    print 'generateALphaList(',ele,A,')'
+    print 'generateAlphaList(',ele,A,')'
     ensdf.main(['parseENSDF',ele,A])
 
 def loadAlphaList(fname):
