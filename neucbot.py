@@ -214,7 +214,6 @@ def runTALYS(e_a, ele, A):
     inp_f = open(inp_fname,'w')
     inp_f.write(command)
     inp_f.close()
-
     out_fname = outdir+"outputE"+str(e_a)
     
     bashcmd = 'talys < '+inp_fname+' > '+out_fname
@@ -403,8 +402,11 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)
     for [e_a, intensity] in alpha_ene_cdf:
         counter += 1
-        if counter % 10 == 0:
-            print 'E_alpha =',e_a,'(',counter,'/',len(alpha_ene_cdf),')'
+        if counter % (int(len(alpha_ene_cdf)/100)) == 0:
+            sys.stdout.write('\r')
+            sys.stdout.write("[%-100s] %d%%" % ('='*int(counter*100/len(alpha_ene_cdf)), 100*counter/len(alpha_ene_cdf)))
+            sys.stdout.flush()
+
         stopping_power = 0
         if stopping_power == 0:
             stopping_power = calcStoppingPower(e_a, mat_comp)
@@ -432,8 +434,13 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                 else:
                     spec_tot[e] = val
 
+    sys.stdout.write('\r')
+    sys.stdout.write("[%-100s] %d%%" % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
+    sys.stdout.flush()
+    print ''
     # print out total spectrum
     newspec = spec_tot
+    print ''
     print '# Total neutron yield = ', total_xsect, ' n/decay' 
     for x in sorted(xsects):
         print '\t',x,xsects[x]
