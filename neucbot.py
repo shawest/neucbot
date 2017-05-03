@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 import os
 sys.path.insert(0, './Scripts/')
@@ -23,6 +24,7 @@ class constants:
     print_alphas = False
     download_data = False
     force_recalculation = False
+    ofile = 0
 
 class material:
     def __init__(self,e,a,f):
@@ -49,7 +51,7 @@ def generateAlphaFileName(ele,A):
     return fName
 
 def generateAlphaList(ele, A):
-    print 'generateAlphaList(',ele,A,')'
+    print('generateAlphaList(',ele,A,')',file=constants.ofile)
     ensdf.main(['parseENSDF',ele,A])
 
 def loadAlphaList(fname):
@@ -76,9 +78,9 @@ def getAlphaListIfExists(ele,A):
     tries = 3
     while not os.path.isfile(fName):
         if tries < 0:
-            print 'Cannot generate alpha list for ele = ', ele,  ' and A = ', A
+            print('Cannot generate alpha list for ele = ', ele,  ' and A = ', A,file = constants.ofile)
             return 0
-        print 'generating alpha file ', fName
+        print('generating alpha file ', fName, file = constants.ofile)
         generateAlphaList(ele,A)
         tries -= 1
     return getAlphaList(ele,A)
@@ -98,8 +100,8 @@ def loadChainAlphaList(fname):
         # Now get the isotope's alpha list and add it to the chain's list
         aList_forIso = getAlphaListIfExists(ele,A)
         if constants.print_alphas:
-            print iso
-            print '\t', aList_forIso
+            print(iso, file = constants.ofile)
+            print('\t', aList_forIso, file = constants.ofile)
         for [ene,intensity] in aList_forIso:
             alpha_list.append([ene, intensity*br/100])
     return alpha_list
@@ -169,8 +171,6 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
                 e_curr /= 1000
             elif str(line[1]) == 'MeV':
                 e_curr *= 1
-            else:
-                print "???????????????"
             sp_curr = float(line[3])+float(line[2])
             
             # Alpha energy is below the list. Use the lowest energy in the list
@@ -217,7 +217,7 @@ def runTALYS(e_a, ele, A):
     out_fname = outdir+"outputE"+str(e_a)
     
     bashcmd = 'talys < '+inp_fname+' > '+out_fname
-    print 'Running TALYS:\t ', bashcmd
+    print('Running TALYS:\t ', bashcmd, file = constants.ofile)
     runscript_fname = "./runscript_temp.sh"
     runscript_f = open(runscript_fname,"w")
     runscript_f.write("#!/usr/bin/bash\n\n"+bashcmd)
@@ -255,19 +255,19 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
     fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
     outpath = isoDir(ele,A) + 'TalysOut'
     if constants.force_recalculation:
-        print 'Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target
-        print 'Outpath', outpath
+        print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+        print('Outpath', outpath, file = constants.ofile)
         runTALYS(int(100*e_a)/100.,ele,A)
            
     # If the file does not exist, run TALYS
     if not os.path.exists(fname):
         if constants.run_talys:
             while not os.path.exists(fname):
-                print 'Running TALYS for', int(100*e_a)/100., 'alpha on', target
-                print 'Outpath', outpath
+                print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+                print('Outpath', outpath, file = constants.ofile)
                 runTALYS(int(100*e_a)/100.,ele,A)
         else:
-            print "Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options"
+            print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
             return {}
     
     # Load the file
@@ -308,7 +308,7 @@ def rebin(histo,step,minbin,maxbin):
             delta = sorted(histo)[index] - sorted(histo)[index-1]
         # If the x value is too low, put it in the underflow bin (-1)
         if i < minbin:
-            print 'Underflow: ', i, ' (minbin = ', minbin, ')'
+            print('Underflow: ', i, ' (minbin = ', minbin, ')',file = constants.ofile)
             if -1 in newhisto:
                 newhisto[-1] += histo[i]*delta
                 normhisto[-1] += delta
@@ -317,7 +317,7 @@ def rebin(histo,step,minbin,maxbin):
                 normhisto[-1] = delta
         # ...or the overflow bin if too high
         if i > maxbin:
-            print 'Overflow: ', histo[i], ' (maxbin = ', maxbin,')'
+            print('Overflow: ', histo[i], ' (maxbin = ', maxbin,')', file = constants.ofile)
             overflowbin = int(nbins+10*step)
             if overflowbin in newhisto:
                 newhisto[overflowbin] += histo[i]*delta
@@ -356,7 +356,7 @@ def integrate(histo):
 def readTotalNXsect(e_a,ele,A):
     fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
     if not os.path.exists(fname):
-        print "Could not find file ", fname
+        print("Could not find file ", fname, file = constants.ofile)
         return 0
     f = open(fname)
     lines = map(lambda line: line.split(), f.readlines())
@@ -437,19 +437,19 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     sys.stdout.write('\r')
     sys.stdout.write("[%-100s] %d%%" % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
     sys.stdout.flush()
-    print ''
+    print('', file = sys.stdout)
     # print out total spectrum
     newspec = spec_tot
-    print ''
-    print '# Total neutron yield = ', total_xsect, ' n/decay' 
+    print('',file = constants.ofile)
+    print('# Total neutron yield = ', total_xsect, ' n/decay', file = constants.ofile)
     for x in sorted(xsects):
-        print '\t',x,xsects[x]
-    print '# Integral of spectrum = ', integrate(newspec), " n/decay"
+        print('\t',x,xsects[x], file = constants.ofile)
+    print('# Integral of spectrum = ', integrate(newspec), " n/decay", file = constants.ofile)
     for e in sorted(newspec):
-        print e, newspec[e]
+        print(e, newspec[e], file = constants.ofile)
 
 def help_message():
-    print 'Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database)\n\t-o [output file name]'
+    print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database)\n\t-o [output file name]', file = sys.stdout)
 
 def main():
     alpha_list = []
@@ -460,19 +460,19 @@ def main():
     for arg in sys.argv:
         if arg == '-l':
             alphalist_file = sys.argv[sys.argv.index(arg)+1]
-            print 'load alpha list', alphalist_file
+            print('load alpha list', alphalist_file, file = sys.stdout)
             alpha_list = loadAlphaList(alphalist_file)
         if arg == '-c':
             chain_file = sys.argv[sys.argv.index(arg)+1]
-            print 'load alpha chain', chain_file
+            print('load alpha chain', chain_file, file = sys.stdout)
             alpha_list = loadChainAlphaList(chain_file)
         if arg == '-m':
             mat_file = sys.argv[sys.argv.index(arg)+1]
-            print 'load target material', mat_file
+            print('load target material', mat_file, file = sys.stdout)
             mat_comp = readTargetMaterial(mat_file)            
         if arg == '-s':
             alpha_step_size = float(sys.argv[sys.argv.index(arg)+1])
-            print 'step size', alpha_step_size
+            print('step size', alpha_step_size, file = sys.stdout)
         if arg == '-h':
             help_message()
             return 0
@@ -483,39 +483,40 @@ def main():
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
-            print 'Only printing alphas'
+            print('Only printing alphas', file = sys.stdout)
             constants.print_alphas = True
             constants.run_alphas = False
         if arg == '--force-recalculation':
             constants.force_recalculation = True
         if arg == '-o':
             ofile = str(sys.argv[sys.argv.index(arg)+1])
-            print 'Printing output to',ofile
-            sys.stdout = open(ofile,'w')
+            print('Printing output to',ofile, file = sys.stdout)
+            constants.ofile = open(ofile,'w')
+            #sys.stdout = open(ofile,'w')
 
     if len(alpha_list) == 0 or len(mat_comp) == 0:
-        if len(alpha_list)==0: print 'No alpha list or chain specified'
-        if len(mat_comp)==0: print 'No target material specified'
-        print ''
+        if len(alpha_list)==0: print('No alpha list or chain specified', file = sys.stdout)
+        if len(mat_comp)==0: print('No target material specified', file = sys.stdout)
+        print('', file = sys.stdout)
         help_message()
         return 0
 
     if constants.print_alphas:
-        print 'Alpha List: '
-        print max(alpha_list)
+        print('Alpha List: ', file = sys.stdout)
+        print(max(alpha_list), file = sys.stdout)
         condense_alpha_list(alpha_list,alpha_step_size)
         for alph in alpha_list:
-            print alph[0],'&', alph[1],'\\\\'
+            print(alph[0],'&', alph[1],'\\\\', file = sys.stdout)
 
     if constants.download_data:
         for mat in mat_comp:
             ele = mat.ele
             if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
-                print '\tDownloading data for',ele
+                print('\tDownloading data for',ele, file = sys.stdout)
                 bashcmd = './Scripts/download_element.sh ' + ele
                 process = subprocess.call(bashcmd,shell=True)              
     if constants.run_alphas:
-        print 'Running alphas:'
+        print('Running alphas:', file = sys.stdout)
         run_alpha(alpha_list, mat_comp, alpha_step_size)
 
 if __name__ == '__main__':
