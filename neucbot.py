@@ -24,7 +24,7 @@ class constants:
     print_alphas = False
     download_data = False
     force_recalculation = False
-    ofile = 0
+    ofile = sys.stdout
 
 class material:
     def __init__(self,e,a,f):
@@ -455,7 +455,6 @@ def main():
     alpha_list = []
     mat_comp = []
     alpha_step_size = 0.01  #MeV (default value)
-
     # Load arguments
     for arg in sys.argv:
         if arg == '-l':
@@ -515,6 +514,7 @@ def main():
                 print('\tDownloading data for',ele, file = sys.stdout)
                 bashcmd = './Scripts/download_element.sh ' + ele
                 process = subprocess.call(bashcmd,shell=True)              
+
     if constants.run_alphas:
         print('Running alphas:', file = sys.stdout)
         run_alpha(alpha_list, mat_comp, alpha_step_size)
