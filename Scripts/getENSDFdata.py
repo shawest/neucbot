@@ -41,7 +41,7 @@ def getURL(ele, A):
     dau_Z = Z-2
     dau_ele = chemistry.getElement(dau_Z)
 
-    nndc_url = 'http://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    nndc_url = 'https://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
     nndc_page = urllib2.urlopen(nndc_url,timeout=3)
     parser = URLLister()
     parser.feed(nndc_page.read())
@@ -54,7 +54,7 @@ def getURL(ele, A):
             url_ends.append(mod_url)
 
     for url_end in url_ends:        
-        url = 'http://www.nndc.bnl.gov/chart/' + url_end
+        url = 'https://www.nndc.bnl.gov/chart/' + url_end
 
         print 'Retrieving ENSDF data from:\t',url
         req = Request(url)

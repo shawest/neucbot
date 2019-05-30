@@ -208,7 +208,7 @@ def runTALYS(e_a, ele, A):
     if not os.path.exists(nspecdir):
         os.makedirs(nspecdir)
 
-    command = "\nprojectile a\nejectiles n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
+    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
 
     inp_fname = inpdir+"inputE"+str(e_a)
     inp_f = open(inp_fname,'w')
