@@ -1,0 +1,834 @@
+
+    TALYS-1.6 (Version: December 23, 2013)
+
+ Copyright (C) 2013  A.J. Koning, S. Hilaire and S. Goriely      
+                         NRG          CEA          ULB    
+
+ Dimensions - Cross sections: mb, Energies: MeV, Angles: degrees
+
+ ########## USER INPUT ##########
+
+ USER INPUT FILE
+
+                                                                                 
+ projectile a                                                                    
+ ejectiles p n g                                                                 
+ element c                                                                       
+ mass 13                                                                         
+ energy 1.64                                                                     
+ preequilibrium y                                                                
+ giantresonance y                                                                
+ multipreeq y                                                                    
+ outspectra y                                                                    
+ outlevels y                                                                     
+ outgamdis y                                                                     
+ filespectrum n g                                                                
+ elwidth 0.2                                                                     
+
+ USER INPUT FILE + DEFAULTS
+
+ Keyword           Value   Variable     Explanation
+
+ #
+ # Four main keywords
+ #
+ projectile          a     ptype0       type of incident particle
+ element            C      Starget      symbol of target nucleus
+ mass               13     mass         mass number of target nucleus
+ energy              1.640 eninc        incident energy in MeV
+ #
+ # Basic physical and numerical parameters
+ #
+ ejectiles  p n g          outtype      outgoing particles
+ maxz                5     maxZ         maximal number of protons away from the initial compound nucleus
+ maxn                6     maxN         maximal number of neutrons away from the initial compound nucleus
+ bins               40     nbins        number of continuum excitation energy bins
+ equidistant         n     flagequi     flag to use equidistant excitation bins instead of logarithmic bins
+ segment             1     segment      number of segments to divide emission energy grid
+ maxlevelstar       30     nlevmax      maximum number of included discrete levels for target
+ maxlevelsres       10     nlevmaxres   maximum number of included discrete levels for residual nucleus
+ maxlevelsbin g     10     nlevbin      maximum number of included discrete levels for gamma    channel
+ maxlevelsbin n     10     nlevbin      maximum number of included discrete levels for neutron  channel
+ maxlevelsbin p     10     nlevbin      maximum number of included discrete levels for proton   channel
+ maxlevelsbin d      5     nlevbin      maximum number of included discrete levels for deuteron channel
+ maxlevelsbin t      5     nlevbin      maximum number of included discrete levels for triton   channel
+ maxlevelsbin h      5     nlevbin      maximum number of included discrete levels for helium-3 channel
+ maxlevelsbin a     30     nlevbin      maximum number of included discrete levels for alpha    channel
+ ltarget             0     ltarget      excited level of target
+ isomer           1.00E+00 isomer       definition of isomer in seconds
+ transpower          5     transpower   power for transmission coefficient limit
+ transeps         1.00E-08 transeps     limit for transmission coefficient
+ xseps            1.00E-07 xseps        limit for cross sections
+ popeps           1.00E-03 popeps       limit for population cross section per nucleus
+ Rfiseps          1.00E-03 Rfiseps      ratio for limit for fission cross section per nucleus
+ elow             1.00E-06 elow         minimal incident energy for nuclear model calculations
+ angles             90     nangle       number of angles
+ anglescont         18     nanglecont   number of angles for continuum
+ anglesrec           1     nanglerec    number of recoil angles
+ maxenrec           20     maxenrec     number of recoil energies
+ channels            n     flagchannels flag for exclusive channels calculation
+ maxchannel          4     maxchannel   maximal number of outgoing particles in individual channel description
+ micro               n     flagmicro    flag for completely microscopic Talys calculation
+ best                n     flagbest     flag to use best set of adjusted parameters
+ relativistic        y     flagrel      flag for relativistic kinematics
+ recoil              n     flagrecoil   flag for calculation of recoils
+ labddx              n     flaglabddx   flag for calculation of DDX in LAB system
+ recoilaverage       n     flagrecoilav flag for average velocity in recoil calculation
+ channelenergy       n     flagEchannel flag for channel energy for emission spectrum
+ reaction            y     flagreaction flag for calculation of nuclear reactions
+ astro               n     flagastro    flag for calculation of astrophysics reaction rate
+ astrogs             n     flagastrogs  flag for calculation of astrophysics reaction rate with target in ground state only
+ massmodel           2     massmodel    model for theoretical nuclear mass
+ expmass             y     flagexpmass  flag for using experimental nuclear mass if available
+ disctable           1     disctable    table with discrete levels
+ production          n     flagprod     flag for isotope production
+ outfy               n     flagoutfy    flag for output detailed fission yield calculation
+ gefran          50000     gefran       number of random events for GEF calculation
+ #
+ # Optical model
+ #
+ localomp            y     flaglocalomp flag for local (y) or global (n) optical model
+ dispersion          n     flagdisp     flag for dispersive optical model
+ jlmomp              n     flagjlm      flag for using semi-microscopic JLM OMP
+ optmodall           n     flagompall   flag for new optical model calculation for all residual nuclei
+ incadjust           y     flagincadj   flag for OMP adjustment on incident channel also
+ omponly             n     flagomponly  flag to execute ONLY an optical model calculation
+ autorot             n     flagautorot  flag for automatic rotational coupled channels calculations for A > 150
+ spherical           y     flagspher    flag to force spherical optical model
+ coulomb             y     flagcoulomb  flag for Coulomb excitation calculation with ECIS
+ statepot            n     flagstate    flag for optical model potential for each excited state
+ maxband             0     maxband      highest vibrational band added to rotational model
+ maxrot              2     maxrot       number of included excited rotational levels
+ sysreaction               sysreaction  particles with reaction cross section from systematics
+ rotational                rotational   particles with possible rotational optical model
+ core               -1     core         even-even core for weakcoupling (-1 or 1)
+ ecissave            n     flagecissave flag for saving ECIS input and output files
+ eciscalc            y     flageciscalc flag for new ECIS calculation for outgoing particles and energy grid
+ inccalc             y     flaginccalc  flag for new ECIS calculation for incident channel
+ endfecis            y     flagendfecis flag for new ECIS calculation for ENDF-6 files
+ radialmodel         2     radialmodel  model for radial matter densities (JLM OMP only)
+ jlmmode             0     jlmmode      option for JLM imaginary potential normalization
+ alphaomp            1     alphaomp     alpha optical model (1=normal, 2= McFadden-Satchler, 3-5= folding potential)
+ deuteronomp         1     deuteronomp  deuteron optical model (1=normal, 2=Daehnick, 3=Bojowald, 4=Han-Shi-Shen, 5=An-Cai)
+ #
+ # Compound nucleus
+ #
+ widthfluc           y     flagwidth    flag for width fluctuation calculation
+ widthmode           1     wmode        designator for width fluctuation model
+ compound            y     flagcomp     flag for compound nucleus model
+ fullhf              n     flagfullhf   flag for full spin dependence of transmission coefficients
+ eciscompound        n     flageciscomp flag for compound nucleus calculation by ECIS
+ cpang               n     flagcpang    flag for compound angular distribution calculation for incident charged particles
+ urr                 n     flagurr      flag for URR calculation
+ urrnjoy             n     flagurrnjoy  flag for normalization of URR parameters with NJOY method
+ lurr                2     lurr         maximal orbital angular momentum for URR
+ #
+ # Gamma emission
+ #
+ gammax              2     gammax       number of l-values for gamma multipolarity
+ strength            1     strength     model for E1 gamma-ray strength function
+ strengthM1          2     strengthM1   model for M1 gamma-ray strength function
+ electronconv        y     flagelectron flag for application of electron conversion coefficient
+ racap               n     flagracap    flag for radiative capture model
+ ldmodelracap        1     ldmodelracap level density model for direct radiative capture
+ #
+ # Pre-equilibrium
+ #
+ preequilibrium      y     flagpreeq    flag for pre-equilibrium calculation
+ preeqmode           2     preeqmode    designator for pre-equilibrium model
+ multipreeq          y     flagmulpre   flag for multiple pre-equilibrium calculation
+ mpreeqmode          2     mpreeqmode   designator for multiple pre-equilibrium model
+ phmodel             1     phmodel      particle-hole state density model
+ pairmodel           2     pairmodel    designator for pre-equilibrium pairing model
+ preeqspin           2     pespinmodel  model for pre-equilibrium spin distribution
+ giantresonance      y     flaggiant    flag for collective contribution from giant resonances
+ preeqsurface        y     flagsurface  flag for surface effects in exciton model
+ preeqcomplex        y     flagpecomp   flag for Kalbach complex particle emission model
+ twocomponent        y     flag2comp    flag for two-component pre-equilibrium model
+ ecisdwba            y     flagecisdwba flag for new ECIS calculation for DWBA for MSD
+ onestep             n     flagonestep  flag for continuum one-step direct only
+ #
+ # Level densities
+ #
+ ldmodel             1     ldmodelall   level density model
+ shellmodel          1     shellmodel   model for shell correction energies
+ kvibmodel           2     kvibmodel    model for vibrational enhancement
+ spincutmodel        1     spincutmodel model for spin cutoff factor for ground state
+ asys                n     flagasys     flag for all level density parameters a from systematics
+ parity              n     flagparity   flag for non-equal parity distribution
+ colenhance          n     flagcolall   flag for collective enahncement of level density for all nuclides
+ ctmglobal           n     flagctmglob  flag for global CTM model (no discrete level info)
+ gshell              n     flaggshell   flag for energy dependence of single particle level density parameter g
+ #
+ # Fission
+ #
+ fission             n     flagfission  flag for fission
+ fismodel            1     fismodel     fission model
+ fismodelalt         4     fismodelalt  alternative fission model for default barriers
+ hbstate             y     flaghbstate  flag for head band states in fission
+ class2              y     flagclass2   flag for class2 states in fission
+ massdis             n     flagmassdis  flag for calculation of fission fragment mass yields
+ ffevaporation       y     flagffevap   flag for calculation of particle evaporation from fission fragment mass yields
+ fisfeed             n     flagfisfeed  flag for output of fission per excitation bin
+ fymodel             2     fymodel      fission yield model, 1: Brosa 2: GEF
+ #
+ # Output
+ #
+ outmain             y     flagmain     flag for main output
+ outbasic            n     flagbasic    flag for output of basic information and results
+ outpopulation       n     flagpop      flag for output of population
+ outcheck            n     flagcheck    flag for output of numerical checks
+ outlevels           y     flaglevels   flag for output of discrete level information
+ outdensity          n     flagdensity  flag for output of level densities
+ outomp              n     flagoutomp   flag for output of optical model parameters
+ outdirect           n     flagdirect   flag for output of direct reaction results
+ outinverse          n     flaginverse  flag for output of transmission coefficients and inverse reaction cross sections
+ outtransenergy      y     flagtransen  flag for output of transmission coefficients per energy
+ outecis             n     flagoutecis  flag for output of ECIS results
+ outgamma            n     flaggamma    flag for output of gamma-ray information
+ outpreequilibrium   n     flagpeout    flag for output of pre-equilibrium results 
+ outfission          n     flagfisout   flag for output of fission information
+ outdiscrete         n     flagdisc     flag for output of discrete state cross sections
+ outspectra          y     flagspec     flag for output of double-differential cross sections
+ addiscrete          y     flagadd      flag for addition of discrete states to spectra
+ addelastic          y     flagaddel    flag for addition of elastic peak to spectra
+ outangle            n     flagang      flag for output of angular distributions
+ outlegendre         n     flaglegendre flag for output of Legendre coefficients
+ ddxmode             0     ddxmode      mode for double-differential cross sections
+ outdwba             n     flagoutdwba  flag for output of DWBA cross sections for MSD
+ outgamdis           y     flaggamdis   flag for output of discrete gamma-ray intensities
+ outexcitation       n     flagexc      flag for output of excitation functions
+ components          n     flagcompo    flag for output of cross section components
+ endf                n     flagendf     flag for information for ENDF-6 file
+ endfdetail          n     flagendfdet  flag for detailed ENDF-6 information per channel
+ partable            n     flagpartable flag for output of model parameters on separate file
+
+ ########## BASIC REACTION PARAMETERS ##########
+
+ Projectile           : alpha       Mass in a.m.u.      :   4.002603
+ Target               :  13C        Mass in a.m.u.      :  13.003354
+
+ Included channels:
+                     gamma   
+                     neutron 
+                     proton  
+                     alpha   
+
+ 1 incident energy (LAB):
+
+      1.640
+
+ Q-values for binary reactions:
+
+ Q(a,g):  6.43515
+ Q(a,n):  2.21660
+ Q(a,p): -7.42209
+ Q(a,a):  0.00000
+
+ NUCLEAR STRUCTURE INFORMATION FOR Z=  6 N=  7 ( 13C ) 
+
+ Mass in a.m.u.     :  13.003354
+
+ Separation energies:
+
+ Particle        S         
+
+ neutron      4.94546
+ proton      17.53251
+ alpha       10.64749
+
+ Discrete levels of Z=  6 N=  7 ( 13C ) 
+
+ Number  Energy Spin Parity  Branching  Ratio (%) Lifetime(sec) Assignment        ENSDF
+
+   0     0.0000  0.5   -                                                           1/2-
+   1     3.0894  0.5   +                                                           1/2+
+                               --->  0  100.0000                   
+   2     3.6845  1.5   -                                                           3/2-
+                               --->  1    0.7444                   
+                               --->  0   99.2556                   
+   3     3.8538  2.5   +                                                           5/2+
+                               --->  2   36.3100                   
+                               --->  1    1.2000                   
+                               --->  0   62.4900                   
+   4     6.8640  2.5   +                                                           5/2+
+                               --->  0  100.0000                   
+   5     7.4920  3.5   +                                                         (7/2+)
+                               --->  0  100.0000                  B
+   6     7.5470  2.5   -                                                           5/2-
+                               --->  0  100.0000                   
+   7     7.6860  1.5   +                                                           3/2+
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+   8     8.2000  1.5   +                                                           3/2+
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+   9     8.8600  0.5   -                                                           1/2-
+                               --->  0  100.0000                   
+  10     9.4998  4.5   +                                                           9/2+
+                               --->  4   50.0000                  B
+                               --->  3   50.0000                  B
+  11     9.8970  1.5   -                                                           3/2-
+                               --->  0  100.0000                   
+  12    10.4600  0.5   -                                           JP                  
+                               --->  6   50.0000                  B
+                               --->  0   50.0000                  B
+  13    10.7530  3.5   -                                                           7/2-
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+  14    10.8180  2.5   -                                                         (5/2-)
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+  15    10.9960  0.5   +                                                           1/2+
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  16    11.0800  0.5   -                                                           1/2-
+                               --->  0  100.0000                   
+  17    11.7480  1.5   -                                                           3/2-
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  18    11.8480  3.5   +                                                           7/2+
+                               --->  6   50.0000                  B
+                               --->  5   50.0000                  B
+  19    11.9500  2.5   +                                                           5/2+
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  20    12.1060  1.5   +                                                           3/2+
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+  21    12.1300  2.5   -                                                           5/2-
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+  22    12.1400  0.5   +                                                           1/2+
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  23    12.1870  1.5   -                                                           3/2-
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  24    12.4380  3.5   -                                                           7/2-
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+  25    13.0000  1.5   +                                           JP                  
+                               --->  5   50.0000                  B
+                               --->  0   50.0000                  B
+  26    13.2800  1.5   -                                                         (3/2-)
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  27    13.4100  4.5   -                                                         (9/2-)
+                               --->  6   50.0000                  B
+                               --->  5   50.0000                  B
+  28    13.5700  3.5   -                                                           7/2-
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+  29    13.7600  0.5   +                                           JP        (5/2,3/2)+
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+  30    14.1300  1.5   -                                                           3/2-
+                               --->  2   50.0000                  B
+                               --->  1   50.0000                  B
+
+ NUCLEAR STRUCTURE INFORMATION FOR Z=  8 N=  9 ( 17O ) 
+
+ Mass in a.m.u.     :  16.999131
+
+ Separation energies:
+
+ Particle        S         
+
+ neutron      4.21855
+ proton      13.85724
+ alpha        6.43515
+
+ Discrete levels of Z=  8 N=  9 ( 17O ) 
+
+ Number  Energy Spin Parity  Branching  Ratio (%) Lifetime(sec) Assignment        ENSDF
+
+   0     0.0000  2.5   +                                                           5/2+
+   1     0.8707  0.5   +                                                           1/2+
+                               --->  0  100.0000                   
+   2     3.0554  0.5   -                                                           1/2-
+                               --->  1  100.0000                   
+   3     3.8428  2.5   -                                                           5/2-
+                               --->  0  100.0000                   
+   4     4.5538  1.5   -                                                           3/2-
+                               --->  1   50.0000                   
+                               --->  0   50.0000                   
+   5     5.0848  1.5   +                                                           3/2+
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+   6     5.2158  4.5   -                                                           9/2-
+                               --->  3  100.0000                  B
+   7     5.3792  1.5   -                                                           3/2-
+                               --->  1   50.0000                  B
+                               --->  0   50.0000                  B
+   8     5.6973  3.5   -                                                           7/2-
+                               --->  4   50.0000                  B
+                               --->  0   50.0000                  B
+   9     5.7328  2.5   -                                                         (5/2-)
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+  10     5.8691  1.5   +                                                           3/2+
+                               --->  3   50.0000                  B
+                               --->  2   50.0000                  B
+
+ ########## RESULTS FOR E=  1.64000 ##########
+
+ Energy dependent input flags
+
+ Width fluctuations (flagwidth)            : y
+ Unresolved resonance parameters (flagurr) : n
+ Preequilibrium (flagpreeq)                : y
+ Multiple preequilibrium (flagmulpre)      : y
+ Number of continuum excitation energy bins: 40
+
+ ########### REACTION SUMMARY FOR E=  1.64000 ###########
+
+ Center-of-mass energy:   1.254
+
+ 1. Total (binary) cross sections
+
+   Reaction        = 8.23666E+00
+     Compound elastic= 1.20067E+00
+     Non-elastic     = 7.03599E+00
+       Direct          = 1.00000E-07
+       Pre-equilibrium = 0.00000E+00
+       Giant resonance = 0.00000E+00
+       Compound non-el = 7.03599E+00
+
+ 2. Binary non-elastic cross sections (non-exclusive)
+
+ gamma   = 3.66149E-04
+ neutron = 7.01488E+00
+ proton  = 0.00000E+00
+ alpha   = 1.00000E-07
+
+ 3. Total particle production cross sections
+
+ gamma   = 3.66149E-04    Multiplicity= 5.20395E-05
+ neutron = 7.01488E+00    Multiplicity= 9.97001E-01
+ proton  = 0.00000E+00    Multiplicity= 0.00000E+00
+ alpha   = 1.00000E-07    Multiplicity= 1.42126E-08
+
+ 4. Residual production cross sections
+
+   a. Per isotope
+
+   Z   A  nuclide    total     level   isomeric    isomeric    lifetime
+                 cross section       cross section  ratio
+
+    8  17 ( 17O ) 1.00000E-07    0    2.00179E-04  0.00000
+    8  16 ( 16O ) 7.01488E+00    0    7.01488E+00  1.00000
+
+   b. Per mass
+
+   A  cross section
+
+   16 7.01488E+00
+
+ Total residual production cross section:     7.01488
+ Non-elastic cross section              :     7.03599
+
+ 7. Composite particle spectra
+
+ Spectra for outgoing gamma   
+
+  Energy   Total       Direct    Pre-equil.  Mult. preeq  Compound
+
+   0.001 3.46489E-12 0.00000E+00 0.00000E+00 0.00000E+00 3.46489E-12
+   0.002 6.92977E-12 0.00000E+00 0.00000E+00 0.00000E+00 6.92977E-12
+   0.005 1.73244E-11 0.00000E+00 0.00000E+00 0.00000E+00 1.73244E-11
+   0.010 3.46489E-11 0.00000E+00 0.00000E+00 0.00000E+00 3.46489E-11
+   0.020 6.92977E-11 0.00000E+00 0.00000E+00 0.00000E+00 6.92977E-11
+   0.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.100 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.200 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.300 1.26370E-07 0.00000E+00 0.00000E+00 0.00000E+00 1.26370E-07
+   0.400 2.84482E-07 0.00000E+00 0.00000E+00 0.00000E+00 2.84482E-07
+   0.500 5.29979E-07 0.00000E+00 0.00000E+00 0.00000E+00 5.29979E-07
+   0.600 8.74758E-07 0.00000E+00 0.00000E+00 0.00000E+00 8.74758E-07
+   0.700 1.32742E-06 0.00000E+00 0.00000E+00 0.00000E+00 1.32742E-06
+   0.800 1.89364E-06 0.00000E+00 0.00000E+00 0.00000E+00 1.89364E-06
+   0.900 2.57651E-06 0.00000E+00 0.00000E+00 0.00000E+00 2.57651E-06
+   1.000 3.38010E-06 0.00000E+00 0.00000E+00 0.00000E+00 3.38010E-06
+   1.100 4.30204E-06 0.00000E+00 0.00000E+00 0.00000E+00 4.30204E-06
+   1.200 5.33778E-06 0.00000E+00 0.00000E+00 0.00000E+00 5.33778E-06
+   1.300 6.48299E-06 0.00000E+00 0.00000E+00 0.00000E+00 6.48299E-06
+   1.400 7.73705E-06 0.00000E+00 0.00000E+00 0.00000E+00 7.73705E-06
+   1.500 9.08976E-06 0.00000E+00 0.00000E+00 0.00000E+00 9.08976E-06
+   1.600 1.05332E-05 0.00000E+00 0.00000E+00 0.00000E+00 1.05332E-05
+   1.700 5.15040E-05 3.94400E-05 0.00000E+00 0.00000E+00 1.20640E-05
+   1.800 6.00967E-05 4.64286E-05 0.00000E+00 0.00000E+00 1.36681E-05
+   1.900 5.26013E-05 5.26013E-05 0.00000E+00 0.00000E+00 1.63709E-11
+   2.000 5.75312E-05 5.75312E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.100 6.10062E-05 6.10062E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.200 6.30356E-05 6.30356E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.300 6.37922E-05 6.37922E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.400 6.35250E-05 6.35250E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.500 6.24817E-05 6.24817E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.600 6.08649E-05 6.08649E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.700 5.88261E-05 5.88261E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.800 5.64852E-05 5.64852E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   2.900 5.39545E-05 5.39545E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.000 5.13529E-05 5.13529E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.100 4.88056E-05 4.88056E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.200 4.64318E-05 4.64318E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.300 4.43285E-05 4.43285E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.400 4.25573E-05 4.25573E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.500 4.11393E-05 4.11393E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.600 4.00575E-05 4.00575E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.700 3.92659E-05 3.92659E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.800 3.87011E-05 3.87011E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   3.900 3.82942E-05 3.82942E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.000 3.79798E-05 3.79798E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.100 3.77026E-05 3.77026E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.200 3.74205E-05 3.74205E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.300 3.71051E-05 3.71051E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.400 3.67405E-05 3.67405E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.500 3.63214E-05 3.63214E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.600 3.58505E-05 3.58505E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.700 3.53359E-05 3.53359E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.800 3.47892E-05 3.47892E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   4.900 3.42240E-05 3.42240E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.000 3.36542E-05 3.36542E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.100 3.30930E-05 3.30930E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.200 3.25525E-05 3.25525E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.300 3.20433E-05 3.20433E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.400 3.15738E-05 3.15738E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.500 3.11501E-05 3.11501E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.600 3.07766E-05 3.07766E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.700 3.04553E-05 3.04553E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.800 3.01865E-05 3.01865E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   5.900 2.99688E-05 2.99688E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.000 2.97994E-05 2.97994E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.100 2.96743E-05 2.96743E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.200 2.95888E-05 2.95888E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.300 2.95374E-05 2.95374E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.400 2.95143E-05 2.95143E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.500 2.95137E-05 2.95137E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.600 2.95298E-05 2.95298E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.700 2.95568E-05 2.95568E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.800 2.95894E-05 2.95894E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   6.900 2.96228E-05 2.96228E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.000 2.96524E-05 2.96524E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.100 2.96741E-05 2.96741E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.200 2.96844E-05 2.96844E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.300 2.96801E-05 2.96801E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.400 2.96587E-05 2.96587E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.500 2.96179E-05 2.96179E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.600 2.95557E-05 2.95557E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.700 2.94708E-05 2.94708E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.800 2.93618E-05 2.93618E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.900 2.92280E-05 2.92280E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.000 2.90686E-05 2.90686E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.100 2.88834E-05 2.88834E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.200 2.86720E-05 2.86720E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.300 2.84345E-05 2.84345E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.400 2.81712E-05 2.81712E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.500 2.78822E-05 2.78822E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.600 2.75683E-05 2.75683E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.700 2.72298E-05 2.72298E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.800 2.68677E-05 2.68677E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.900 2.64828E-05 2.64828E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.000 2.60760E-05 2.60760E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.100 2.56484E-05 2.56484E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.200 2.52011E-05 2.52011E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.300 2.47353E-05 2.47353E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.400 2.42523E-05 2.42523E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.500 2.37533E-05 2.37533E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.600 2.32397E-05 2.32397E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.700 2.27129E-05 2.27129E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.800 2.21742E-05 2.21742E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   9.900 2.16252E-05 2.16252E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.000 2.10671E-05 2.10671E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.100 2.05014E-05 2.05014E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.200 1.99295E-05 1.99295E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.300 1.93528E-05 1.93528E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.400 1.87727E-05 1.87727E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.500 1.81905E-05 1.81905E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.600 1.76074E-05 1.76074E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.700 1.70249E-05 1.70249E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.800 1.64440E-05 1.64440E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  10.900 1.58660E-05 1.58660E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.000 1.52920E-05 1.52920E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.100 1.47230E-05 1.47230E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.200 1.41601E-05 1.41601E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.300 1.36042E-05 1.36042E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.400 1.30562E-05 1.30562E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.500 1.25170E-05 1.25170E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.600 1.19873E-05 1.19873E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.700 1.14679E-05 1.14679E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.800 1.09592E-05 1.09592E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  11.900 1.04621E-05 1.04621E-05 0.00000E+00 0.00000E+00 0.00000E+00
+  12.000 9.97689E-06 9.97689E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.100 9.50410E-06 9.50410E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.200 9.04413E-06 9.04413E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.300 8.59731E-06 8.59731E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.400 8.16390E-06 8.16390E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.500 7.74414E-06 7.74414E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.600 7.33818E-06 7.33818E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.700 6.94615E-06 6.94615E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.800 6.56811E-06 6.56811E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  12.900 6.20406E-06 6.20406E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.000 5.85400E-06 5.85400E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.100 5.51784E-06 5.51784E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.200 5.19549E-06 5.19549E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.300 4.88679E-06 4.88679E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.400 4.59157E-06 4.59157E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.500 4.30962E-06 4.30962E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.600 4.04071E-06 4.04071E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.700 3.78456E-06 3.78456E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.800 3.54090E-06 3.54090E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  13.900 3.30941E-06 3.30941E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.000 3.08979E-06 3.08979E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.100 2.88168E-06 2.88168E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.200 2.68474E-06 2.68474E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.300 2.49861E-06 2.49861E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.400 2.32292E-06 2.32292E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.500 2.15729E-06 2.15729E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.600 2.00134E-06 2.00134E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.700 1.85470E-06 1.85470E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.800 1.71697E-06 1.71697E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  14.900 1.58779E-06 1.58779E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.000 1.46676E-06 1.46676E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.100 1.35352E-06 1.35352E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.200 1.24769E-06 1.24769E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.300 1.14891E-06 1.14891E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.400 1.05683E-06 1.05683E-06 0.00000E+00 0.00000E+00 0.00000E+00
+  15.500 9.71090E-07 9.71090E-07 0.00000E+00 0.00000E+00 0.00000E+00
+  15.600 8.91355E-07 8.91355E-07 0.00000E+00 0.00000E+00 0.00000E+00
+  15.700 8.17296E-07 8.17296E-07 0.00000E+00 0.00000E+00 0.00000E+00
+  15.800 7.48591E-07 7.48591E-07 0.00000E+00 0.00000E+00 0.00000E+00
+  15.900 6.84929E-07 6.84929E-07 0.00000E+00 0.00000E+00 0.00000E+00
+
+ Spectra for outgoing neutron 
+
+  Energy   Total       Direct    Pre-equil.  Mult. preeq  Compound
+
+   0.100 3.74736E-03 3.74736E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   0.200 5.54341E-03 5.54341E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   0.300 8.10416E-03 8.10416E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   0.400 1.17089E-02 1.17089E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   0.500 1.67188E-02 1.67188E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   0.600 2.35924E-02 2.35924E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   0.700 3.29018E-02 3.29018E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   0.800 4.53465E-02 4.53465E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   0.900 6.17657E-02 6.17657E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   1.000 8.31438E-02 8.31438E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   1.100 1.10609E-01 1.10609E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.200 1.45422E-01 1.45422E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.300 1.88951E-01 1.88951E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.400 2.42632E-01 2.42632E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.500 3.07910E-01 3.07910E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.600 3.86171E-01 3.86171E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.700 4.78645E-01 4.78645E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.800 5.86308E-01 5.86308E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   1.900 7.09770E-01 7.09770E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   2.000 8.49158E-01 8.49158E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   2.100 1.00401E+00 1.00401E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.200 1.17318E+00 1.17318E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.300 1.35479E+00 1.35479E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.400 1.54617E+00 1.54617E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.500 1.74390E+00 1.74390E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.600 1.94386E+00 1.94386E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.700 2.14135E+00 2.14135E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.800 2.33125E+00 2.33125E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.900 2.50824E+00 2.50824E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.000 2.66703E+00 2.66703E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.100 2.80262E+00 2.80262E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.200 2.91059E+00 2.91059E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.300 2.98728E+00 2.98728E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.400 3.03005E+00 3.03005E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.500 3.03740E+00 3.03740E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.600 3.00908E+00 3.00908E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.700 2.94607E+00 2.94607E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.800 2.85058E+00 2.85058E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.900 2.72584E+00 2.72584E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.000 2.57601E+00 2.57601E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.100 2.40587E+00 2.40587E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.200 2.22063E+00 2.22063E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.300 2.02563E+00 2.02563E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.400 1.82609E+00 1.82609E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.500 1.62690E+00 1.62690E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.600 1.43246E+00 1.43246E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.700 1.24646E+00 1.24646E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.800 1.07191E+00 1.07191E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.900 9.10987E-01 9.10987E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.000 7.65151E-01 7.65151E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.100 6.35127E-01 6.35127E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.200 5.21018E-01 5.21018E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.300 4.22400E-01 4.22400E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.400 3.38434E-01 3.38434E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.500 2.67980E-01 2.67980E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.600 2.09706E-01 2.09706E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.700 1.62180E-01 1.62180E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.800 1.23954E-01 1.23954E-01 0.00000E+00 0.00000E+00 0.00000E+00
+   5.900 9.36278E-02 9.36278E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.000 6.98920E-02 6.98920E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.100 5.15620E-02 5.15620E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.200 3.75933E-02 3.75933E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.300 2.70875E-02 2.70875E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.400 1.92889E-02 1.92889E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.500 1.35745E-02 1.35745E-02 0.00000E+00 0.00000E+00 0.00000E+00
+   6.600 9.44103E-03 9.44103E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   6.700 6.48924E-03 6.48924E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   6.800 4.40805E-03 4.40805E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   6.900 2.95923E-03 2.95923E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   7.000 1.96331E-03 1.96331E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   7.100 1.28730E-03 1.28730E-03 0.00000E+00 0.00000E+00 0.00000E+00
+   7.200 8.34157E-04 8.34157E-04 0.00000E+00 0.00000E+00 0.00000E+00
+   7.300 5.34188E-04 5.34188E-04 0.00000E+00 0.00000E+00 0.00000E+00
+   7.400 3.38080E-04 3.38080E-04 0.00000E+00 0.00000E+00 0.00000E+00
+   7.500 2.11458E-04 2.11458E-04 0.00000E+00 0.00000E+00 0.00000E+00
+   7.600 1.30710E-04 1.30710E-04 0.00000E+00 0.00000E+00 0.00000E+00
+   7.700 7.98493E-05 7.98493E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.800 4.82072E-05 4.82072E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   7.900 2.87629E-05 2.87629E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.000 1.69602E-05 1.69602E-05 0.00000E+00 0.00000E+00 0.00000E+00
+   8.100 9.88343E-06 9.88343E-06 0.00000E+00 0.00000E+00 0.00000E+00
+   8.200 5.69201E-06 5.69201E-06 0.00000E+00 0.00000E+00 0.00000E+00
+   8.300 3.23967E-06 3.23967E-06 0.00000E+00 0.00000E+00 0.00000E+00
+   8.400 1.82228E-06 1.82228E-06 0.00000E+00 0.00000E+00 0.00000E+00
+   8.500 1.01300E-06 1.01300E-06 0.00000E+00 0.00000E+00 0.00000E+00
+   8.600 5.56516E-07 5.56516E-07 0.00000E+00 0.00000E+00 0.00000E+00
+   8.700 3.02155E-07 3.02155E-07 0.00000E+00 0.00000E+00 0.00000E+00
+   8.800 1.62128E-07 1.62128E-07 0.00000E+00 0.00000E+00 0.00000E+00
+   8.900 8.59742E-08 8.59742E-08 0.00000E+00 0.00000E+00 0.00000E+00
+   9.000 4.50561E-08 4.50561E-08 0.00000E+00 0.00000E+00 0.00000E+00
+   9.100 2.33355E-08 2.33355E-08 0.00000E+00 0.00000E+00 0.00000E+00
+   9.200 1.19444E-08 1.19444E-08 0.00000E+00 0.00000E+00 0.00000E+00
+   9.300 6.04209E-09 6.04209E-09 0.00000E+00 0.00000E+00 0.00000E+00
+   9.400 3.02059E-09 3.02059E-09 0.00000E+00 0.00000E+00 0.00000E+00
+   9.500 1.49235E-09 1.49235E-09 0.00000E+00 0.00000E+00 0.00000E+00
+   9.600 7.28667E-10 7.28667E-10 0.00000E+00 0.00000E+00 0.00000E+00
+   9.700 3.51616E-10 3.51616E-10 0.00000E+00 0.00000E+00 0.00000E+00
+   9.800 1.67682E-10 1.67682E-10 0.00000E+00 0.00000E+00 0.00000E+00
+   9.900 7.90284E-11 7.90284E-11 0.00000E+00 0.00000E+00 0.00000E+00
+  10.000 3.68092E-11 3.68092E-11 0.00000E+00 0.00000E+00 0.00000E+00
+  10.100 1.69437E-11 1.69437E-11 0.00000E+00 0.00000E+00 0.00000E+00
+  10.200 7.70805E-12 7.70805E-12 0.00000E+00 0.00000E+00 0.00000E+00
+  10.300 3.46541E-12 3.46541E-12 0.00000E+00 0.00000E+00 0.00000E+00
+  10.400 1.53974E-12 1.53974E-12 0.00000E+00 0.00000E+00 0.00000E+00
+  10.500 6.76103E-13 6.76103E-13 0.00000E+00 0.00000E+00 0.00000E+00
+  10.600 2.93400E-13 2.93400E-13 0.00000E+00 0.00000E+00 0.00000E+00
+  10.700 1.25831E-13 1.25831E-13 0.00000E+00 0.00000E+00 0.00000E+00
+  10.800 5.33326E-14 5.33326E-14 0.00000E+00 0.00000E+00 0.00000E+00
+  10.900 2.23398E-14 2.23398E-14 0.00000E+00 0.00000E+00 0.00000E+00
+  11.000 9.24784E-15 9.24784E-15 0.00000E+00 0.00000E+00 0.00000E+00
+  11.100 3.78338E-15 3.78338E-15 0.00000E+00 0.00000E+00 0.00000E+00
+  11.200 1.52969E-15 1.52969E-15 0.00000E+00 0.00000E+00 0.00000E+00
+  11.300 6.11226E-16 6.11226E-16 0.00000E+00 0.00000E+00 0.00000E+00
+  11.400 2.41369E-16 2.41369E-16 0.00000E+00 0.00000E+00 0.00000E+00
+  11.500 9.41966E-17 9.41966E-17 0.00000E+00 0.00000E+00 0.00000E+00
+  11.600 3.63304E-17 3.63304E-17 0.00000E+00 0.00000E+00 0.00000E+00
+
+ Spectra for outgoing alpha   
+
+  Energy   Total       Direct    Pre-equil.  Mult. preeq  Compound
+
+   0.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   0.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   1.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   2.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   3.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   4.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   5.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   6.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   7.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.350 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.450 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.550 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.650 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.750 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.850 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   8.950 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   9.050 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   9.150 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+   9.250 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00 0.00000E+00
+
+ 10. Gamma-ray intensities
+
+ Nuclide:  16O 
+
+     Initial level          Final level     Gamma Energy  Cross section 
+
+  no.  J/Pi    Ex         no.  J/Pi    Ex
+
+
+  Total                                                   0.00000E+00
+
+ Execution time:  0 hours  0 minutes  0.40 seconds 
+
+ The TALYS team congratulates you with this successful calculation.
