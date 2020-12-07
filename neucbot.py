@@ -23,6 +23,7 @@ class constants:
     run_alphas = True
     print_alphas = False
     download_data = False
+    download_version = 2
     force_recalculation = False
     ofile = sys.stdout
 
@@ -135,6 +136,7 @@ def readTargetMaterial(fname):
         norm += mat.frac
     for mat in mat_comp:
         mat.frac /= norm
+
     return mat_comp
 
 def calcStoppingPower(e_alpha_MeV,mat_comp):
@@ -208,7 +210,8 @@ def runTALYS(e_a, ele, A):
     if not os.path.exists(nspecdir):
         os.makedirs(nspecdir)
 
-    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
+#    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
+    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2"
 
     inp_fname = inpdir+"inputE"+str(e_a)
     inp_f = open(inp_fname,'w')
@@ -225,12 +228,14 @@ def runTALYS(e_a, ele, A):
     process = subprocess.call(bashcmd,shell=True)
     # Move the output neutron spectrum to the appropriate directory
     ls = os.listdir("./")
+
     moved_file = False
     for f in ls:
         if "nspec" in f:
             if os.path.exists(nspecdir+f):
                 os.remove(nspecdir+f)
-            shutil.move(f, nspecdir)
+            fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
+            shutil.move(f, fname)
             moved_file = True
     # If no neutron spectrum file is found, make a blank one
     if not moved_file:
@@ -266,6 +271,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
                 print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
                 print('Outpath', outpath, file = constants.ofile)
                 runTALYS(int(100*e_a)/100.,ele,A)
+                ls = os.listdir(outpath)
         else:
             print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
             return {}
@@ -449,7 +455,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         print(e, newspec[e], file = constants.ofile)
 
 def help_message():
-    print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database)\n\t-o [output file name]', file = sys.stdout)
+    print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database; default behavior is v2)\n\t\t-d v1 (use V1 database, TALYS-1.6)\n\t-d v2 (use V2 database, TALYS-1.95)\n\t-o [output file name]', file = sys.stdout)
 
 def main():
     alpha_list = []
@@ -479,6 +485,12 @@ def main():
             constants.run_talys = True
         if arg == '-d':
             constants.download_data = True
+            constants.download_version = 2
+            version_choice = sys.argv[sys.argv.index(arg)+1]
+            if (not version_choice[0] == '-') and (version_choice[1].lower() == 'v'):
+                version_num = int(version_num[2])
+                constants.download_version = version_num
+                print('Downloading data from version',version_num)
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
@@ -511,9 +523,14 @@ def main():
         for mat in mat_comp:
             ele = mat.ele
             if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
-                print('\tDownloading data for',ele, file = sys.stdout)
-                bashcmd = './Scripts/download_element.sh ' + ele
-                process = subprocess.call(bashcmd,shell=True)              
+                if constants.download_version == 2:
+                    print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                    bashcmd = './Scripts/download_element.sh ' + ele
+                    process = subprocess.call(bashcmd,shell=True)
+                elif constants.download_version == 1:
+                    print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                    bashcmd = './Scripts/download_element_v1.sh ' + ele
+                    process = subprocess.call(bashcmd,shell=True)
 
     if constants.run_alphas:
         print('Running alphas:', file = sys.stdout)
