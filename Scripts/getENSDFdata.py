@@ -32,6 +32,12 @@ def getPage(url, ele, A):
 
     text = re.sub('<.*>','',page.read())
     text = text[re.search('[0-9]',text).start():]
+    newtext = ""
+    for line in text.split('\n'):
+      if(len(line)>1):
+        newtext += line + '\n'
+    text = re.sub(r'^\t','',newtext,flags=re.MULTILINE)
+    #print(text)
     f.write(text)
     return page.read()
 
@@ -41,7 +47,8 @@ def getURL(ele, A):
     dau_Z = Z-2
     dau_ele = chemistry.getElement(dau_Z)
 
-    nndc_url = 'https://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    # nndc_url = 'https://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    nndc_url = 'https://www.nndc.bnl.gov/nudat2/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
     nndc_page = urllib2.urlopen(nndc_url,timeout=3)
     parser = URLLister()
     parser.feed(nndc_page.read())
@@ -54,7 +61,8 @@ def getURL(ele, A):
             url_ends.append(mod_url)
 
     for url_end in url_ends:        
-        url = 'https://www.nndc.bnl.gov/chart/' + url_end
+        #url = 'https://www.nndc.bnl.gov/chart/' + url_end
+        url = 'https://www.nndc.bnl.gov/nudat2/' + url_end
 
         print 'Retrieving ENSDF data from:\t',url
         req = Request(url)
