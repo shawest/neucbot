@@ -17,13 +17,12 @@ class constants:
     mb_to_cm2 = 1.e-27
     year_to_s = 31536000 
     min_bin   = 0   # keV
-    max_bin   = 20000  # keV
+    max_bin   = 25000  # keV it was 20000
     delta_bin = 100 # keV
     run_talys  = False
     run_alphas = True
     print_alphas = False
     download_data = False
-    download_version = 2
     force_recalculation = False
     ofile = sys.stdout
 
@@ -136,7 +135,6 @@ def readTargetMaterial(fname):
         norm += mat.frac
     for mat in mat_comp:
         mat.frac /= norm
-
     return mat_comp
 
 def calcStoppingPower(e_alpha_MeV,mat_comp):
@@ -202,16 +200,18 @@ def runTALYS(e_a, ele, A):
     iso = str(ele)+str(int(A))
     inpdir = isoDir(ele,A) + 'TalysInputs/'
     outdir = isoDir(ele,A) + 'TalysOut/'
+    gspecdir= isoDir(ele,A) + 'GSpectra/'
     nspecdir= isoDir(ele,A) + 'NSpectra/'
     if not os.path.exists(inpdir):
         os.makedirs(inpdir)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
+    if not os.path.exists(gspecdir):
+        os.makedirs(gspecdir)
     if not os.path.exists(nspecdir):
         os.makedirs(nspecdir)
 
-#    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
-    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2"
+    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n g\nelwidth 0.2\n"
 
     inp_fname = inpdir+"inputE"+str(e_a)
     inp_f = open(inp_fname,'w')
@@ -228,14 +228,12 @@ def runTALYS(e_a, ele, A):
     process = subprocess.call(bashcmd,shell=True)
     # Move the output neutron spectrum to the appropriate directory
     ls = os.listdir("./")
-
     moved_file = False
     for f in ls:
         if "nspec" in f:
             if os.path.exists(nspecdir+f):
                 os.remove(nspecdir+f)
-            fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
-            shutil.move(f, fname)
+            shutil.move(f, nspecdir)
             moved_file = True
     # If no neutron spectrum file is found, make a blank one
     if not moved_file:
@@ -243,6 +241,21 @@ def runTALYS(e_a, ele, A):
         blank_f = open(fname,'w')
         blank_f.write("EMPTY")
         blank_f.close()
+        print('Running TALYS:\t ')
+    moved_file = False
+    for f in ls:
+        if "gspec" in f:
+            if os.path.exists(gspecdir+f):
+                os.remove(gspecdir+f)
+            shutil.move(f, gspecdir)
+            moved_file = True        
+    # If no neutron spectrum file is found, make a blank one
+    if not moved_file:
+        fname = gspecdir+'gspec{0:0>7.3f}.tot'.format(e_a)
+        blank_f = open(fname,'w')
+        blank_f.write("EMPTY")
+        blank_f.close()
+        print('Running TALYS:\t ')
         
 
 def getMatTerm(mat,mat_comp):
@@ -271,11 +284,69 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
                 print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
                 print('Outpath', outpath, file = constants.ofile)
                 runTALYS(int(100*e_a)/100.,ele,A)
-                ls = os.listdir(outpath)
         else:
             print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
             return {}
-    
+    # Load the file
+    # If no output was produced, skip this energy
+    if not os.path.exists(outpath):
+        return {}
+
+    # Load the file
+    # If no output was produced, skip this energy
+    if not os.path.exists(outpath):
+        return {}
+
+    f = open(fname)
+    spec = {}
+    tokens = map(lambda line: line.split(), f.readlines())
+    for line in tokens:
+        if len(line) < 1 or line[0] == 'EMPTY':
+            break
+        if line[0][0] == '#':
+            continue
+        # line[0] = E-out
+        # line[1] = Total
+        # line[2] = Direct
+        # line[3] = Pre-equil
+        # line[4] = Mult. preeq
+        # line[5] = Compound
+        # line[6] = Pre-eq ratio
+        # convert from mb/MeV to cm^2/MeV
+        energy = int(float(line[0])*constants.MeV_to_keV)
+        sigma = float(line[1])*constants.mb_to_cm2/constants.MeV_to_keV
+        spec[energy] = sigma
+    return spec
+
+
+
+def getIsotopeDifferentialGSpec(e_a, ele, A):
+    target = ele+str(int(A))
+    path = isoDir(ele,A) + 'GSpectra/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    fname = path+'gspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
+    outpath = isoDir(ele,A) + 'TalysOut'
+    if constants.force_recalculation:
+        print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+        print('Outpath', outpath, file = constants.ofile)
+        runTALYS(int(100*e_a)/100.,ele,A)
+           
+    # If the file does not exist, run TALYS
+    if not os.path.exists(fname):
+        if constants.run_talys:
+            while not os.path.exists(fname):
+                print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+                print('Outpath', outpath, file = constants.ofile)
+                runTALYS(int(100*e_a)/100.,ele,A)
+        else:
+            print("Warning, no (alpha,g) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
+            return {}
+    # Load the file
+    # If no output was produced, skip this energy
+    if not os.path.exists(outpath):
+        return {}
+
     # Load the file
     # If no output was produced, skip this energy
     if not os.path.exists(outpath):
@@ -358,6 +429,30 @@ def integrate(histo):
 
         integral += histo[i]*delta
     return integral
+
+def readTotalGXsect(e_a,ele,A):
+    fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
+    if not os.path.exists(fname):
+        print("Could not find file ", fname, file = constants.ofile)
+        return 0
+    f = open(fname)
+    lines = map(lambda line: line.split(), f.readlines())
+    xsect_line  = 0
+    for line in lines:
+        if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
+            break
+        else:
+            xsect_line += 1
+    
+    xsect_line += 2
+    if len(lines) < xsect_line:
+        return 0
+    if lines[xsect_line][0] != 'gamma':
+        print('# Total = ', total_xsect, ' n/decay', file = constants.ofile)
+        return 0
+    sigma = float(lines[xsect_line][2])
+    sigma *= constants.mb_to_cm2
+    return sigma
     
 def readTotalNXsect(e_a,ele,A):
     fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
@@ -402,8 +497,11 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     binsize = 0.1 # Bin size for output spectrum
 
     spec_tot = {}
+    spec_tot1 = {}
     xsects = {}
+    xsects1 = {}
     total_xsect = 0
+    total_xsect1 = 0
     counter = 0
     alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)
     for [e_a, intensity] in alpha_ene_cdf:
@@ -418,16 +516,21 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             stopping_power = calcStoppingPower(e_a, mat_comp)
         for mat in mat_comp:
             mat_term = getMatTerm(mat,mat_comp)
-            # Get alpha n spectrum for this alpha and this target
+            # Get neutron spectrum for this alpha and this target
             spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A)
             spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
+            # Get gamma spectrum for this alpha and this target
+            spec_raw1 = getIsotopeDifferentialGSpec(e_a, mat.ele, mat.A)
+            spec1 = rebin(spec_raw1,constants.delta_bin,constants.min_bin,constants.max_bin)
             # Add this spectrum to the total spectrum
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             prefactors = (intensity/100.)*mat_term*delta_ea/stopping_power
             xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)
+            xsect1 = prefactors * readTotalGXsect(e_a,mat.ele,mat.A)
             total_xsect += xsect
+            total_xsect1 += xsect1
             matname = str(mat.ele)+str(mat.A)
             if matname in xsects:
                 xsects[matname] += xsect
@@ -439,7 +542,16 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                     spec_tot[e] += val
                 else:
                     spec_tot[e] = val
-
+            if matname in xsects1:
+                xsects1[matname] += xsect1
+            else:
+                xsects1[matname] = xsect1
+            for e in spec1:
+                val = prefactors * spec1[e]
+                if e in spec_tot1:
+                    spec_tot1[e] += val
+                else:
+                    spec_tot1[e] = val    
     sys.stdout.write('\r')
     sys.stdout.write("[%-100s] %d%%" % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
     sys.stdout.flush()
@@ -453,9 +565,17 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     print('# Integral of spectrum = ', integrate(newspec), " n/decay", file = constants.ofile)
     for e in sorted(newspec):
         print(e, newspec[e], file = constants.ofile)
+    newspec1 = spec_tot1
+    print('',file = constants.ofile)
+    print('# Total gamma yield = ', total_xsect1, ' g/decay', file = constants.ofile)
+    for x in sorted(xsects1):
+        print('\t',x,xsects1[x], file = constants.ofile)
+    print('# Integral of spectrum = ', integrate(newspec1), " g/decay", file = constants.ofile)
+    for e in sorted(newspec1):
+        print(e, newspec1[e], file = constants.ofile)
 
 def help_message():
-    print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database; default behavior is v2)\n\t\t-d v1 (use V1 database, TALYS-1.6)\n\t-d v2 (use V2 database, TALYS-1.95)\n\t-o [output file name]', file = sys.stdout)
+    print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database)\n\t-o [output file name]', file = sys.stdout)
 
 def main():
     alpha_list = []
@@ -485,12 +605,6 @@ def main():
             constants.run_talys = True
         if arg == '-d':
             constants.download_data = True
-            constants.download_version = 2
-            version_choice = sys.argv[sys.argv.index(arg)+1]
-            if (not version_choice[0] == '-') and (version_choice[1].lower() == 'v'):
-                version_num = int(version_num[2])
-                constants.download_version = version_num
-                print('Downloading data from version',version_num)
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
@@ -523,14 +637,9 @@ def main():
         for mat in mat_comp:
             ele = mat.ele
             if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
-                if constants.download_version == 2:
-                    print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
-                    bashcmd = './Scripts/download_element.sh ' + ele
-                    process = subprocess.call(bashcmd,shell=True)
-                elif constants.download_version == 1:
-                    print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
-                    bashcmd = './Scripts/download_element_v1.sh ' + ele
-                    process = subprocess.call(bashcmd,shell=True)
+                print('\tDownloading data for',ele, file = sys.stdout)
+                bashcmd = './Scripts/download_element.sh ' + ele
+                process = subprocess.call(bashcmd,shell=True)              
 
     if constants.run_alphas:
         print('Running alphas:', file = sys.stdout)

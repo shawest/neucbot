@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# This script downloads elements for the V2 dataset, generated with TALYS-1.95
+# This script downloads elements for the V1 dataset, generated with TALYS-1.6
 #
 
 inp=$1
@@ -11,7 +11,7 @@ ELE=`echo ${_ele} | tr '[:lower:]' '[:upper:]'`
 Ele=${ELE:0:1}${ele:1:10}
 dir=$PWD
 cd ./Data/Isotopes/
-git clone https://github.com/neucbot-datasets/${ele}_v2.git 
-tar -xvzf ./${ele}_v2/${Ele}.tar.gz
-rm -rf ${ele}_v2
+git clone https://github.com/neucbot-datasets/${ele}.git 
+tar -xvzf ./${ele}/${Ele}.tar.gz
+rm -rf ${ele}
 cd $dir
