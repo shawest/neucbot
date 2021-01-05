@@ -123,12 +123,12 @@ def getIntensityScale(fname):
 
 def main(argv):
     if(len(argv) != 3):
-        print 'Usage: ./parseENSDF [element] [A]'
+        print ('Usage: ./parseENSDF [element] [A]') #print 'Usage: ./parseENSDF [element] [A]'
         return
 
     ele = argv[1]
     A = int(argv[2])
-    indir = './Data/Decays/'
+    indir = '../Data/Decays/' #indir = './Data/Decays/'
     finName = indir + 'ensdf' + ele.capitalize() + str(A) + '.dat'
 
     if(not os.path.isfile(finName)):
@@ -139,7 +139,7 @@ def main(argv):
     intensityScale = getIntensityScale(finName)
     getAlphas(finName,energies,probs)
     
-    outdir = './AlphaLists/'
+    outdir = '../AlphaLists/' #outdir = './AlphaLists/'
     foutName = outdir + ele.capitalize() + str(A) + 'Alphas.dat'
     fout = open(foutName,'w')
 

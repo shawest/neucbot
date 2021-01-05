@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from __future__ import print_function
+
 import sys
 import os
 sys.path.insert(0, './Scripts/')
@@ -56,7 +56,7 @@ def generateAlphaList(ele, A):
 
 def loadAlphaList(fname):
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     alpha_list = []
     for words in tokens:
         if words[0][0] == '#' or len(words) < 2:
@@ -87,7 +87,7 @@ def getAlphaListIfExists(ele,A):
 
 def loadChainAlphaList(fname):
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     alpha_list = []
     for line in tokens:
         if len(line) < 2 or line[0][0] == '#':
@@ -109,7 +109,7 @@ def loadChainAlphaList(fname):
 def readTargetMaterial(fname):
     f = open(fname)
     mat_comp = []
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(line) < 3:
             continue
@@ -155,7 +155,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
         spFile = spDir + mat.lower() + '.dat'
         spf = open(spFile)
         
-        tokens = map(lambda line: line.split(), spf.readlines())
+        tokens = [line.split() for line in spf.readlines()]
         first = True
         sp_found = False
         e_curr = 0
@@ -299,7 +299,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
 
     f = open(fname)
     spec = {}
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(line) < 1 or line[0] == 'EMPTY':
             break
@@ -354,7 +354,7 @@ def getIsotopeDifferentialGSpec(e_a, ele, A):
 
     f = open(fname)
     spec = {}
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(line) < 1 or line[0] == 'EMPTY':
             break
@@ -436,7 +436,7 @@ def readTotalGXsect(e_a,ele,A):
         print("Could not find file ", fname, file = constants.ofile)
         return 0
     f = open(fname)
-    lines = map(lambda line: line.split(), f.readlines())
+    lines = [line.split() for line in f.readlines()]
     xsect_line  = 0
     for line in lines:
         if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
@@ -460,7 +460,7 @@ def readTotalNXsect(e_a,ele,A):
         print("Could not find file ", fname, file = constants.ofile)
         return 0
     f = open(fname)
-    lines = map(lambda line: line.split(), f.readlines())
+    lines = [line.split() for line in f.readlines()]
     xsect_line  = 0
     for line in lines:
         if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
