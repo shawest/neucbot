@@ -162,7 +162,7 @@ def calcStoppingPower(e_alpha_MeV, mat_comp):
     e_alpha = e_alpha_MeV
     sp_total = 0
     # First, reduce the material to combine all isotopes with the same Z
-    mat_comp_reduced = {}
+    mat_comp_reduced = {} #словарь. каждому элементу - своя stopping powers
     for mat in mat_comp:
         if mat.ele in mat_comp_reduced:
             mat_comp_reduced[mat.ele] += mat.frac

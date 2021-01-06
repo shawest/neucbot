@@ -9,7 +9,7 @@ def findIsotopes(ele):
     f = open(fname) #открываем файл
     #f = fname.open()
     #tokens = [re.split(" ", line) for line in f.readlines()] #снова создаем двумерный массив и убираем все пробелы
-    tokens = [re.split("", line) for line in f.readlines()]
+    tokens = [re.split(" ", line) for line in f.readlines()]
     
     isotopes = "" #создаем пустую строку
 
