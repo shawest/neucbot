@@ -25,6 +25,8 @@ class constants:
     download_data = False
     force_recalculation = False
     ofile = sys.stdout
+    talys_cmd_file = -1
+    talys_cmd = ""
 
 class material:
     def __init__(self,e,a,f):
@@ -209,7 +211,15 @@ def runTALYS(e_a, ele, A):
         os.makedirs(nspecdir)
 
     command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
-
+    if constants.talys_cmd_file != -1:
+        with open(constants.talys_cmd_file,'r') as cmd_f:
+            command = cmd_f.read().replace('\n','\n')
+        command = command.replace('$ELE',ele)
+        command = command.replace('$A',str(int(A)))
+        command = command.replace('$E',str(e_a))
+        constants.talys_cmd = command
+        
+    
     inp_fname = inpdir+"inputE"+str(e_a)
     inp_f = open(inp_fname,'w')
     inp_f.write(command)
@@ -479,6 +489,9 @@ def main():
             constants.run_talys = True
         if arg == '-d':
             constants.download_data = True
+        if arg == '--tcmd':
+            constants.talys_cmd_file = str(sys.argv[sys.argv.index(arg)+1])
+            print('Using custom TALYS command in file',constants.talys_cmd_file,file = sys.stdout)
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
