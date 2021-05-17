@@ -237,7 +237,7 @@ def runTALYS(e_a, ele, A):
             moved_file = True
     # If no neutron spectrum file is found, make a blank one
     if not moved_file:
-        fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
+        fname = nspecdir+'nspec{0:0>8.3f}.tot'.format(e_a)
         blank_f = open(fname,'w')
         blank_f.write("EMPTY")
         blank_f.close()
@@ -251,7 +251,7 @@ def runTALYS(e_a, ele, A):
             moved_file = True        
     # If no neutron spectrum file is found, make a blank one
     if not moved_file:
-        fname = gspecdir+'gspec{0:0>7.3f}.tot'.format(e_a)
+        fname = gspecdir+'gspec{0:0>8.3f}.tot'.format(e_a)
         blank_f = open(fname,'w')
         blank_f.write("EMPTY")
         blank_f.close()
@@ -270,7 +270,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
     path = isoDir(ele,A) + 'NSpectra/'
     if not os.path.exists(path):
         os.makedirs(path)
-    fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
+    fname = path+'nspec{0:0>8.3f}.tot'.format(int(100*e_a)/100.)
     outpath = isoDir(ele,A) + 'TalysOut'
     if constants.force_recalculation:
         print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
@@ -325,7 +325,7 @@ def getIsotopeDifferentialGSpec(e_a, ele, A):
     path = isoDir(ele,A) + 'GSpectra/'
     if not os.path.exists(path):
         os.makedirs(path)
-    fname = path+'gspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
+    fname = path+'gspec{0:0>8.3f}.tot'.format(int(100*e_a)/100.)
     outpath = isoDir(ele,A) + 'TalysOut'
     if constants.force_recalculation:
         print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
