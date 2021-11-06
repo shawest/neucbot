@@ -2,7 +2,7 @@
 #                     NeuCBOT v-2.0                      
 Author: Shawn Westerdale
 
-email: shawest@physics.carleton.ca
+email: shawest@princeton.edu
 
 Date: 5 Jun 2020
 
