@@ -487,8 +487,8 @@ def main():
             constants.download_data = True
             constants.download_version = 2
             version_choice = sys.argv[sys.argv.index(arg)+1]
-            if (not version_choice[0] == '-') and (version_choice[1].lower() == 'v'):
-                version_num = int(version_num[2])
+            if (not version_choice[0] == '-') and (version_choice[0].lower() == 'v'):
+                version_num = int(version_choice[1])
                 constants.download_version = version_num
                 print('Downloading data from version',version_num)
         if arg == '--print-alphas':
