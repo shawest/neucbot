@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 from __future__ import print_function
 import sys
 import os
@@ -10,6 +11,7 @@ import math
 import parseENSDF as ensdf
 import getNaturalIsotopes as gni
 import getAbundance as isoabund
+
 
 class constants:
     N_A = 6.0221409e+23
@@ -34,15 +36,17 @@ class material:
         self.frac = float(f)
 
 def isoDir(ele,A):
-    return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    with open(r"./Data/routes.txt", "r") as file:
+        return file.readlines()[14].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    #return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
 
 def parseIsotope(iso):
     ele = ''
     A = 0
     for i in iso:
-        if i.isalpha():
+        if i.isalpha(): # если буква
             ele += i
-        if i.isdigit():
+        if i.isdigit(): # если число
             A = A*10 + int(i)
     return [ele,A]
 
@@ -62,7 +66,6 @@ def loadAlphaList(fname):
     for words in tokens:
         if words[0][0] == '#' or len(words) < 2:
             continue
-
         alpha = []
         for word in words:
             alpha.append(float(word))
@@ -88,7 +91,7 @@ def getAlphaListIfExists(ele,A):
 
 def loadChainAlphaList(fname):
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = map(lambda line: line.split(), f.readlines()) # читает цепочку распада
     alpha_list = []
     for line in tokens:
         if len(line) < 2 or line[0][0] == '#':
@@ -96,7 +99,7 @@ def loadChainAlphaList(fname):
         # Read isotope and its branching ratio from file
         iso = line[0]
         br = float(line[1])
-        [ele,A] = parseIsotope(iso)
+        [ele,A] = parseIsotope(iso) # дробит Th232 на ele=Th, A=232
         
         # Now get the isotope's alpha list and add it to the chain's list
         aList_forIso = getAlphaListIfExists(ele,A)
@@ -119,16 +122,31 @@ def readTargetMaterial(fname):
         ele = line[0].lower()
         A = int(line[1])
         frac = float(line[2])
+        basename = line[3].lower() if len(line) == 4 else 't'
 
-        if A == 0:
-            natIso_list = gni.findIsotopes(ele).split()
-            for A_i in natIso_list:
-                abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))
-                mater = material(ele,A_i,frac*abund/100.)
+        if basename == 't':
+            if A == 0:
+                natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
+                for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
+                    abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
+                    mater = material(ele,A_i,frac*abund/100.)   # структура из названия элмента, его массы, 
+                    # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
+                    mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
+            else:
+                mater = material(ele,A,frac)    # структура из названия элемента, его массы, и масоовой доли в веществе
                 mat_comp.append(mater)
         else:
-            mater = material(ele,A,frac)
-            mat_comp.append(mater)
+            if A == 0:
+                natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
+                for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
+
+                    abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
+                    mater = material('Jendl'+ele,A_i,frac*abund/100.)   # структура из названия элмента, его массы, 
+                    # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
+                    mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
+            else:
+                mater = material('Jendl'+ele,A,frac)    # структура из названия элемента, его массы, и масоовой доли в веществе
+                mat_comp.append(mater)
 
     # Normalize
     norm = 0
@@ -136,6 +154,9 @@ def readTargetMaterial(fname):
         norm += mat.frac
     for mat in mat_comp:
         mat.frac /= norm
+
+    if basename == 'j':
+        mat_comp.append('j')    # это было нужно для того, чтобы видеть наличие J/T в '-c'
 
     return mat_comp
 
@@ -210,28 +231,28 @@ def runTALYS(e_a, ele, A):
     if not os.path.exists(nspecdir):
         os.makedirs(nspecdir)
 
-#    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
-    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2"
+#    command = '\nprojectile a\nejectiles p n g\nelement '+ele+'\nmass '+str(int(A))+'\nenergy '+str(e_a)+'\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n'
+    command = '\nprojectile a\nejectiles p n g\nelement '+ele+'\nmass '+str(int(A))+'\nenergy '+str(e_a)+'\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2'
 
-    inp_fname = inpdir+"inputE"+str(e_a)
+    inp_fname = inpdir+'inputE'+str(e_a)
     inp_f = open(inp_fname,'w')
     inp_f.write(command)
     inp_f.close()
-    out_fname = outdir+"outputE"+str(e_a)
+    out_fname = outdir+'outputE'+str(e_a)
     
     bashcmd = 'talys < '+inp_fname+' > '+out_fname
     print('Running TALYS:\t ', bashcmd, file = constants.ofile)
-    runscript_fname = "./runscript_temp.sh"
-    runscript_f = open(runscript_fname,"w")
-    runscript_f.write("#!/usr/bin/bash\n\n"+bashcmd)
+    runscript_fname = './runscript_temp.sh'
+    runscript_f = open(runscript_fname,'w')
+    runscript_f.write('#!/usr/bin/bash\n\n'+bashcmd)
     runscript_f.close()
     process = subprocess.call(bashcmd,shell=True)
     # Move the output neutron spectrum to the appropriate directory
-    ls = os.listdir("./")
+    ls = os.listdir('./')
 
     moved_file = False
     for f in ls:
-        if "nspec" in f:
+        if 'nspec' in f:
             if os.path.exists(nspecdir+f):
                 os.remove(nspecdir+f)
             fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
@@ -241,7 +262,7 @@ def runTALYS(e_a, ele, A):
     if not moved_file:
         fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
         blank_f = open(fname,'w')
-        blank_f.write("EMPTY")
+        blank_f.write('EMPTY')
         blank_f.close()
         
 
@@ -273,7 +294,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
                 runTALYS(int(100*e_a)/100.,ele,A)
                 ls = os.listdir(outpath)
         else:
-            print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
+            print('Warning, no (alpha,n) data found for E_a =', e_a,'MeV on target', target,'...skipping. Consider running with the -d or -t options', file = constants.ofile)
             return {}
     
     # Load the file
@@ -359,10 +380,10 @@ def integrate(histo):
         integral += histo[i]*delta
     return integral
     
-def readTotalNXsect(e_a,ele,A):
+def readTotalNXsect(e_a,ele,A):             ################### 
     fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
     if not os.path.exists(fname):
-        print("Could not find file ", fname, file = constants.ofile)
+        print('Could not find file ', fname, file = constants.ofile)
         return 0
     f = open(fname)
     lines = map(lambda line: line.split(), f.readlines())
@@ -410,7 +431,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         counter += 1
         if counter % (int(len(alpha_ene_cdf)/100)) == 0:
             sys.stdout.write('\r')
-            sys.stdout.write("[%-100s] %d%%" % ('='*int(counter*100/len(alpha_ene_cdf)), 100*counter/len(alpha_ene_cdf)))
+            sys.stdout.write('[%-100s] %d%%' % ('='*int(counter*100/len(alpha_ene_cdf)), 100*counter/len(alpha_ene_cdf)))
             sys.stdout.flush()
 
         stopping_power = 0
@@ -426,7 +447,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             prefactors = (intensity/100.)*mat_term*delta_ea/stopping_power
-            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)
+            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)         #####
             total_xsect += xsect
             matname = str(mat.ele)+str(mat.A)
             if matname in xsects:
@@ -441,7 +462,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                     spec_tot[e] = val
 
     sys.stdout.write('\r')
-    sys.stdout.write("[%-100s] %d%%" % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
+    sys.stdout.write('[%-100s] %d%%' % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
     sys.stdout.flush()
     print('', file = sys.stdout)
     # print out total spectrum
@@ -450,7 +471,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     print('# Total neutron yield = ', total_xsect, ' n/decay', file = constants.ofile)
     for x in sorted(xsects):
         print('\t',x,xsects[x], file = constants.ofile)
-    print('# Integral of spectrum = ', integrate(newspec), " n/decay", file = constants.ofile)
+    print('# Integral of spectrum = ', integrate(newspec), ' n/decay', file = constants.ofile)
     for e in sorted(newspec):
         print(e, newspec[e], file = constants.ofile)
 
@@ -467,7 +488,12 @@ def main():
             alphalist_file = sys.argv[sys.argv.index(arg)+1]
             print('load alpha list', alphalist_file, file = sys.stdout)
             alpha_list = loadAlphaList(alphalist_file)
+        
         if arg == '-c':
+            '''mat_file = sys.argv[sys.argv.index('-m')+1]
+            mat_comp = readTargetMaterial(mat_file)
+            if mat_comp[1] == 'j':
+                continue'''
             chain_file = sys.argv[sys.argv.index(arg)+1]
             print('load alpha chain', chain_file, file = sys.stdout)
             alpha_list = loadChainAlphaList(chain_file)
@@ -475,6 +501,7 @@ def main():
             mat_file = sys.argv[sys.argv.index(arg)+1]
             print('load target material', mat_file, file = sys.stdout)
             mat_comp = readTargetMaterial(mat_file)            
+        
         if arg == '-s':
             alpha_step_size = float(sys.argv[sys.argv.index(arg)+1])
             print('step size', alpha_step_size, file = sys.stdout)
@@ -522,15 +549,17 @@ def main():
     if constants.download_data:
         for mat in mat_comp:
             ele = mat.ele
-            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
-                if constants.download_version == 2:
-                    print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
-                    bashcmd = './Scripts/download_element.sh ' + ele
-                    process = subprocess.call(bashcmd,shell=True)
-                elif constants.download_version == 1:
-                    print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
-                    bashcmd = './Scripts/download_element_v1.sh ' + ele
-                    process = subprocess.call(bashcmd,shell=True)
+
+            with open(r"./Data/routes.txt", "r") as file:
+                if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
+                    if constants.download_version == 2:
+                        print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                        bashcmd = './Scripts/download_element.sh ' + ele
+                        process = subprocess.call(bashcmd,shell=True)
+                    elif constants.download_version == 1:
+                        print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                        bashcmd = './Scripts/download_element_v1.sh ' + ele
+                        process = subprocess.call(bashcmd,shell=True)
 
     if constants.run_alphas:
         print('Running alphas:', file = sys.stdout)
