@@ -8,7 +8,7 @@ import sys
 import chemistry
 import socket
 from urllib.request import Request
-from sgmllib import SGMLParser
+from sgmllib import SGMLParser      # лучше использовать библиотеку lxml    https://stackoverflow.com/questions/4352320/sgml-parsing-in-python3-1
 
 class URLLister(SGMLParser):
   def reset(self):
