@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import urllib2
 import re
 import sys
@@ -27,8 +28,8 @@ def getPage(url, ele, A):
     try:
         page = urllib2.urlopen(req,timeout=3)
     except socket.timeout:
-        print "ERROR: TIMEOUT"
-        print url
+        print("ERROR: TIMEOUT")
+        print(url)
 
     text = re.sub('<.*>','',page.read())
     text = text[re.search('[0-9]',text).start():]
@@ -64,14 +65,14 @@ def getURL(ele, A):
         #url = 'https://www.nndc.bnl.gov/chart/' + url_end
         url = 'https://www.nndc.bnl.gov/nudat2/' + url_end
 
-        print 'Retrieving ENSDF data from:\t',url
+        print('Retrieving ENSDF data from:\t',url)
         req = Request(url)
         page = ''
         try:
             page = urllib2.urlopen(req,timeout=3)
         except (socket.timeout, urllib2.URLError):
-            print "ERROR: TIMEOUT"
-            print url
+            print("ERROR: TIMEOUT")
+            print(url)
 
         text = re.sub('<.*>','',page.read())
 
@@ -89,7 +90,7 @@ def getURL(ele, A):
         else :
             continue
         if len(text) < 30 :
-            print 'WARNING: Could not find alpha for ele = {}, A = {}'.format(ele,A)
+            print('WARNING: Could not find alpha for ele = {}, A = {}'.format(ele,A))
             break
 
         # Check that this page is for a ground state decay
@@ -104,7 +105,7 @@ def getURL(ele, A):
 
 def main(argv):
     if(len(argv) != 3):
-        print 'Usage: ./getENSDFdata.py [element] [A]'
+        print('Usage: ./getENSDFdata.py [element] [A]')
         return
 
     ele = argv[1]

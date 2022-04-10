@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 import os.path
 import re
@@ -123,7 +124,7 @@ def getIntensityScale(fname):
 
 def main(argv):
     if(len(argv) != 3):
-        print 'Usage: ./parseENSDF [element] [A]'
+        print('Usage: ./parseENSDF [element] [A]')
         return
 
     ele = argv[1]

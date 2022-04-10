@@ -30,10 +30,13 @@ class constants:
     ofile = sys.stdout
 
 class material:
-    def __init__(self,e,a,f):
+    def __init__(self,e,a,f,b):
         self.ele = str(e)
         self.A = float(a)
         self.frac = float(f)
+        self.basename = str(b)
+    def get_list(self):
+        return [self.ele, self.A, self.frac, self.basename]
 
 def isoDir(ele,A):
     with open(r"./Data/routes.txt", "r") as file:
@@ -52,14 +55,16 @@ def parseIsotope(iso):
 
 def generateAlphaFileName(ele,A):
     outdir = './AlphaLists/'
-    fName = outdir + ele.capitalize() + str(A) + 'Alphas.dat'
+    fName = outdir + ele.capitalize() + str(A) + 'Alphas.dat'   # example: ./AlphaLists/Th232Alphas.dat
     return fName
 
 def generateAlphaList(ele, A):
     print('generateAlphaList(',ele,A,')',file=constants.ofile)
-    ensdf.main(['parseENSDF',ele,A])
+    ensdf.main(['parseENSDF',ele,A])    # Заполняет ./AlphaLists/Th232Alphas.dat
+#       ENSDF is a database that contains evaluated nuclear structure 
+#       and decay information for over 3,000 nuclides
 
-def loadAlphaList(fname):
+def loadAlphaList(fname):   # example: fame = ./AlphaLists/Th232Alphas.dat
     f = open(fname)
     tokens = map(lambda line: line.split(), f.readlines())
     alpha_list = []
@@ -71,55 +76,63 @@ def loadAlphaList(fname):
             alpha.append(float(word))
         alpha_list.append(alpha)
     f.close()
-    return alpha_list
+    #print(alpha_list, '\n')
+    return alpha_list   # Просто массив из энергии + вероятности (intensity)
 
 def getAlphaList(ele,A):
-    fname = generateAlphaFileName(ele,A)
+    fname = generateAlphaFileName(ele,A)    # example: fName = ./AlphaLists/Th232Alphas.dat
     return loadAlphaList(fname)
 
 def getAlphaListIfExists(ele,A):
-    fName = generateAlphaFileName(ele,A)
+    fName = generateAlphaFileName(ele,A)    # example: fName = ./AlphaLists/Th232Alphas.dat
     tries = 3
-    while not os.path.isfile(fName):
+    while not os.path.isfile(fName):    # выполнять пока на этом пути нет файла:
         if tries < 0:
-            print('Cannot generate alpha list for ele = ', ele,  ' and A = ', A,file = constants.ofile)
+            print('Cannot generate alpha list for ele = ', ele, ' and A = ', A, file = constants.ofile)
             return 0
         print('generating alpha file ', fName, file = constants.ofile)
-        generateAlphaList(ele,A)
+        generateAlphaList(ele,A)    # Я сюда не лез
         tries -= 1
-    return getAlphaList(ele,A)
+    return getAlphaList(ele,A)  # Создаёт заполненный список энергий альфачастиц и вероятность их появления в цепочке
 
 def loadChainAlphaList(fname):
-    f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines()) # читает цепочку распада
+    f = open(fname) # f = Chains/Th232Chain.dat
+    tokens = map(lambda line: line.split(), f.readlines())  
+                        # читает цепочку распада. 2 столбца: 
+                        # название элемента и 
+                        # вероятность распада в него из предыдущего
     alpha_list = []
     for line in tokens:
         if len(line) < 2 or line[0][0] == '#':
             continue
         # Read isotope and its branching ratio from file
-        iso = line[0]
-        br = float(line[1])
+        iso = line[0]   # Элемент + атомная масса
+        br = float(line[1]) # Вероятность распада в изотоп из предыдущего
         [ele,A] = parseIsotope(iso) # дробит Th232 на ele=Th, A=232
         
         # Now get the isotope's alpha list and add it to the chain's list
-        aList_forIso = getAlphaListIfExists(ele,A)
-        if constants.print_alphas:
-            print(iso, file = constants.ofile)
+        aList_forIso = getAlphaListIfExists(ele,A) 
+      # aList_forIso = заполненный список энергий альфачастиц и вероятность их появления в цепочке (intesity)
+        if constants.print_alphas:  # По умолчанию это False
+            print(iso, file = constants.ofile)  # ?????? не важно
             print('\t', aList_forIso, file = constants.ofile)
-        for [ene,intensity] in aList_forIso:
+        for [ene,intensity] in aList_forIso:    # ene -энергия, intensity - вероятность распада в изотоп из предыдущего
             alpha_list.append([ene, intensity*br/100])
-    return alpha_list
+            print(ene, '\t\t', intensity*br/100)
+    return alpha_list   # список из [энергии, вероятность появления такой частицы в цепи] для всех элементов в цепи
 
 def readTargetMaterial(fname):
-    f = open(fname)
+    f = open(fname) # f = Materials/Acrylic.dat
     mat_comp = []
     tokens = map(lambda line: line.split(), f.readlines())
-    for line in tokens:
+    for line in tokens: # Читаем файл из 4х столбцов: название элемента, 
+                        # его массовое число, процентное содержание оного в веществе 
+                        # и название базы данных, откуда его взять (J / T)
         if len(line) < 3:
             continue
         if line[0][0] == '#':
             continue
-        ele = line[0].lower()
+        ele = line[0].lower() # считываем данные
         A = int(line[1])
         frac = float(line[2])
         basename = line[3].lower() if len(line) == 4 else 't'
@@ -129,11 +142,12 @@ def readTargetMaterial(fname):
                 natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
                 for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
                     abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
-                    mater = material(ele,A_i,frac*abund/100.)   # структура из названия элмента, его массы, 
+                    mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
                     # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
                     mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
+                    print(mater.get_list())
             else:
-                mater = material(ele,A,frac)    # структура из названия элемента, его массы, и масоовой доли в веществе
+                mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
                 mat_comp.append(mater)
         else:
             if A == 0:
@@ -141,11 +155,12 @@ def readTargetMaterial(fname):
                 for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
 
                     abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
-                    mater = material('Jendl'+ele,A_i,frac*abund/100.)   # структура из названия элмента, его массы, 
+                    mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
                     # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
                     mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
+                    print(mater.get_list())
             else:
-                mater = material('Jendl'+ele,A,frac)    # структура из названия элемента, его массы, и масоовой доли в веществе
+                mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
                 mat_comp.append(mater)
 
     # Normalize
@@ -267,7 +282,8 @@ def runTALYS(e_a, ele, A):
         
 
 def getMatTerm(mat,mat_comp):
-    # mat_comp structure: [ele,A,frac]
+    # mat_comp structure: [ele,A,frac,basename]
+    # mat structure: ele,A,frac,basename
     A = mat.A
     conc = mat.frac/100.
     mat_term = (constants.N_A * conc)/A
@@ -286,8 +302,8 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         runTALYS(int(100*e_a)/100.,ele,A)
            
     # If the file does not exist, run TALYS
-    if not os.path.exists(fname):
-        if constants.run_talys:
+    if not os.path.exists(fname): # вот тут надо переписать чтобы Жендл вписался если что 
+        if constants.run_talys: # разобраться с тем, что выводит Жендл и что делаает Талис
             while not os.path.exists(fname):
                 print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
                 print('Outpath', outpath, file = constants.ofile)
@@ -404,29 +420,39 @@ def readTotalNXsect(e_a,ele,A):             ###################
     return sigma
 
 def condense_alpha_list(alpha_list,alpha_step_size):
+    # alpha_list - список энергий альфачастиц с вероятностью встретить конкретную в цепочке распада
+    # alpha_step_size = шаг по энергии
+    #print(alpha_list, '\n')
     alpha_ene_cdf = []
-    max_alpha = max(alpha_list)
-    e_a_max = int(max_alpha[0]*100 + 0.5)/100.
+    max_alpha = max(alpha_list) # Самая большая энергия распада + её вероятность
+    #print(max_alpha, '\n')
+    e_a_max = int(max_alpha[0]*100 + 0.5)/100.      # Округляет энергию альфы
     alpha_ene_cdf.append([e_a_max,max_alpha[1]])
     e_a = e_a_max
-    while e_a > 0:
+    while e_a > 0:      # Функция суммирует для каждого e_a все вероятности, которые соответсвуют энергиям,
+                        # меньшим чем e_a. e_a - бегунок от максимальной энергии до нуля.
         cum_int = 0
         for alpha in alpha_list:
-            this_e_a = int(alpha[0]*100+0.5)/100.
+            this_e_a = int(alpha[0]*100+0.5)/100.   # Округляет энергию альфы
             if this_e_a >= e_a:
                 cum_int += alpha[1]
         alpha_ene_cdf.append([e_a,cum_int])
         e_a -= alpha_step_size
+        # print(e_a, '\t', cum_int)
     return alpha_ene_cdf
 
 def run_alpha(alpha_list, mat_comp, e_alpha_step):
+        # alpha_list - список энергий альфачастиц с вероятностью встретить конкретную в цепочке распада
+        # mat_comp - Список из структур из названия элемента, его массы, и масоовой доли в веществе
+        # e_alpha_step - ширина шага спектра (по энергии) == 0,01 МэВ по умолчанию
+
     binsize = 0.1 # Bin size for output spectrum
 
-    spec_tot = {}
-    xsects = {}
+    spec_tot = {}   # dictonary # Спектр (интеграл)
+    xsects = {}     # dictonary # Сечение реакции
     total_xsect = 0
     counter = 0
-    alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)
+    alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)    # Рассчёт просуммированной функции распределения вероятностей альф по энергиям
     for [e_a, intensity] in alpha_ene_cdf:
         counter += 1
         if counter % (int(len(alpha_ene_cdf)/100)) == 0:
@@ -437,8 +463,10 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         stopping_power = 0
         if stopping_power == 0:
             stopping_power = calcStoppingPower(e_a, mat_comp)
+        # this looks like unnecessary action 
+        
         for mat in mat_comp:
-            mat_term = getMatTerm(mat,mat_comp)
+            mat_term = getMatTerm(mat,mat_comp) 
             # Get alpha n spectrum for this alpha and this target
             spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A)
             spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
@@ -483,25 +511,35 @@ def main():
     mat_comp = []
     alpha_step_size = 0.01  #MeV (default value)
     # Load arguments
+    #argv = ['neucbot.py', '-m', 'Materials/Acrylic.dat', '-c', 'Chains/Th232Chain.dat']
     for arg in sys.argv:
+    #for arg in argv:
         if arg == '-l':
             alphalist_file = sys.argv[sys.argv.index(arg)+1]
             print('load alpha list', alphalist_file, file = sys.stdout)
             alpha_list = loadAlphaList(alphalist_file)
         
+
+
         if arg == '-c':
             '''mat_file = sys.argv[sys.argv.index('-m')+1]
             mat_comp = readTargetMaterial(mat_file)
             if mat_comp[1] == 'j':
                 continue'''
             chain_file = sys.argv[sys.argv.index(arg)+1]
+            #chain_file = argv[argv.index(arg)+1]    # example: chain_file = Chains/Th232Chain.dat
             print('load alpha chain', chain_file, file = sys.stdout)
-            alpha_list = loadChainAlphaList(chain_file)
+            alpha_list = loadChainAlphaList(chain_file) # Подгружает цепочку энергий распада
+            #print(alpha_list, '\n')
+
         if arg == '-m':
             mat_file = sys.argv[sys.argv.index(arg)+1]
+            #mat_file = argv[argv.index(arg)+1]  # example: mat_file = Materials/Acrylic.dat
             print('load target material', mat_file, file = sys.stdout)
-            mat_comp = readTargetMaterial(mat_file)            
-        
+            mat_comp = readTargetMaterial(mat_file)
+            # Выдаёт писок из структур из названия элемента, его массы, и масоовой доли в веществе
+
+
         if arg == '-s':
             alpha_step_size = float(sys.argv[sys.argv.index(arg)+1])
             print('step size', alpha_step_size, file = sys.stdout)
@@ -549,21 +587,42 @@ def main():
     if constants.download_data:
         for mat in mat_comp:
             ele = mat.ele
-
-            with open(r"./Data/routes.txt", "r") as file:
-                if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
-                    if constants.download_version == 2:
-                        print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
-                        bashcmd = './Scripts/download_element.sh ' + ele
-                        process = subprocess.call(bashcmd,shell=True)
-                    elif constants.download_version == 1:
-                        print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
-                        bashcmd = './Scripts/download_element_v1.sh ' + ele
-                        process = subprocess.call(bashcmd,shell=True)
+            basename = mat.basename
+            if basename == 't':
+                with open(r"./Data/routes.txt", "r") as file:
+                #   if not os.path.exists('Talys'+file.readlines()[14].rstrip()+ele.capitalize()):
+                #   надо бы написать чтобы загрузка шла в папку с 'talys' в названии
+                    if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
+                        if constants.download_version == 2:
+                            print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                            bashcmd = './Scripts/download_element.sh ' + ele
+                            process = subprocess.call(bashcmd,shell=True)
+                        elif constants.download_version == 1:
+                            print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                            bashcmd = './Scripts/download_element_v1.sh ' + ele
+                            process = subprocess.call(bashcmd,shell=True)
+            else:
+                with open(r"./Data/routes.txt", "r") as file:
+                #   надо бы написать чтобы загрузка шла в папку с 'talys' в названии
+                    if not os.path.exists('jendl'+file.readlines()[14].rstrip()+ele.capitalize()):
+                        print('ERROR: there is no folder for jendl')
+                        '''
+                        if constants.download_version == 2:
+                            print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                            bashcmd = './Scripts/download_element.sh ' + ele
+                            process = subprocess.call(bashcmd,shell=True)
+                        elif constants.download_version == 1:
+                            print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                            bashcmd = './Scripts/download_element_v1.sh ' + ele
+                            process = subprocess.call(bashcmd,shell=True)
+                            '''
 
     if constants.run_alphas:
         print('Running alphas:', file = sys.stdout)
         run_alpha(alpha_list, mat_comp, alpha_step_size)
+        # alpha_list - цепочка энергий распада
+        # mat_comp - Список из структур из названия элемента, его массы, и масоовой доли в веществе
+        # alpha_step_size - ширина шага спектра (по энергии) == 0,01 МэВ по умолчанию
 
 if __name__ == '__main__':
     main()

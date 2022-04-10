@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 import re
 
@@ -11,12 +12,12 @@ def findAbundance(iso):
     for words in tokens:
         for word in words:
             if word == iso:
-                return filter(None,words)[2]
+                return filter(None,words)[2]  # ['a', '1', None, '4.4'] -> ['a', '1', '4.4']
 
 def main(argv):
     iso = sys.argv[1]
     abundance = findAbundance(iso)
-    print abundance
+    print(abundance)
     return abundance
 
 if __name__ == '__main__' :
