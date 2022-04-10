@@ -27,7 +27,7 @@ def getZ(ele):
     return elements[ele.capitalize()]
 
 def getElement(z):
-    for ele in elements.keys():
+    for ele in elements:
         if elements[ele] == z:
             return ele
     return "None"

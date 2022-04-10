@@ -1,11 +1,13 @@
 #!/usr/bin/python
 from __future__ import print_function
-import urllib2
+from future import standard_library
+standard_library.install_aliases()
+import urllib.request, urllib.error, urllib.parse
 import re
 import sys
 import chemistry
 import socket
-from urllib2 import Request
+from urllib.request import Request
 from sgmllib import SGMLParser
 
 class URLLister(SGMLParser):
@@ -26,7 +28,7 @@ def getPage(url, ele, A):
     req  = Request(url)
     page = ''
     try:
-        page = urllib2.urlopen(req,timeout=3)
+        page = urllib.request.urlopen(req,timeout=3)
     except socket.timeout:
         print("ERROR: TIMEOUT")
         print(url)
@@ -50,7 +52,7 @@ def getURL(ele, A):
 
     # nndc_url = 'https://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
     nndc_url = 'https://www.nndc.bnl.gov/nudat2/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
-    nndc_page = urllib2.urlopen(nndc_url,timeout=3)
+    nndc_page = urllib.request.urlopen(nndc_url,timeout=3)
     parser = URLLister()
     parser.feed(nndc_page.read())
     parser.close()
@@ -69,8 +71,8 @@ def getURL(ele, A):
         req = Request(url)
         page = ''
         try:
-            page = urllib2.urlopen(req,timeout=3)
-        except (socket.timeout, urllib2.URLError):
+            page = urllib.request.urlopen(req,timeout=3)
+        except (socket.timeout, urllib.error.URLError):
             print("ERROR: TIMEOUT")
             print(url)
 

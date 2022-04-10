@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 import sys
 import os
 sys.path.insert(0, './Scripts/')
@@ -66,7 +68,7 @@ def generateAlphaList(ele, A):
 
 def loadAlphaList(fname):   # example: fame = ./AlphaLists/Th232Alphas.dat
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     alpha_list = []
     for words in tokens:
         if words[0][0] == '#' or len(words) < 2:
@@ -97,7 +99,7 @@ def getAlphaListIfExists(ele,A):
 
 def loadChainAlphaList(fname):
     f = open(fname) # f = Chains/Th232Chain.dat
-    tokens = map(lambda line: line.split(), f.readlines())  
+    tokens = [line.split() for line in f.readlines()]  
                         # читает цепочку распада. 2 столбца: 
                         # название элемента и 
                         # вероятность распада в него из предыдущего
@@ -117,14 +119,14 @@ def loadChainAlphaList(fname):
             print(iso, file = constants.ofile)  # ?????? не важно
             print('\t', aList_forIso, file = constants.ofile)
         for [ene,intensity] in aList_forIso:    # ene -энергия, intensity - вероятность распада в изотоп из предыдущего
-            alpha_list.append([ene, intensity*br/100])
-            print(ene, '\t\t', intensity*br/100)
+            alpha_list.append([ene, old_div(intensity*br,100)])
+            print(ene, '\t\t', old_div(intensity*br,100))
     return alpha_list   # список из [энергии, вероятность появления такой частицы в цепи] для всех элементов в цепи
 
 def readTargetMaterial(fname):
     f = open(fname) # f = Materials/Acrylic.dat
     mat_comp = []
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens: # Читаем файл из 4х столбцов: название элемента, 
                         # его массовое число, процентное содержание оного в веществе 
                         # и название базы данных, откуда его взять (J / T)
@@ -193,7 +195,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
         spFile = spDir + mat.lower() + '.dat'
         spf = open(spFile)
         
-        tokens = map(lambda line: line.split(), spf.readlines())
+        tokens = [line.split() for line in spf.readlines()]
         first = True
         sp_found = False
         e_curr = 0
@@ -221,7 +223,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
             # entry and the previous one
             if e_curr > e_alpha:
                 first = False
-                sp_alpha = (sp_curr-sp_last)*(e_alpha-e_last)/(e_curr-e_last) + sp_last
+                sp_alpha = old_div((sp_curr-sp_last)*(e_alpha-e_last),(e_curr-e_last)) + sp_last
                 sp_found = True
                 break
             # Otherwise, keep looking for the entry
@@ -231,7 +233,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
         # if the alpha energy is too high for the list, use the highest energy on the list
         if not sp_found:
             sp_alpha = sp_last
-        sp_total += sp_alpha * mat_comp_reduced[mat]/100
+        sp_total += old_div(sp_alpha * mat_comp_reduced[mat],100)
     return sp_total
 
 def runTALYS(e_a, ele, A):
@@ -286,7 +288,7 @@ def getMatTerm(mat,mat_comp):
     # mat structure: ele,A,frac,basename
     A = mat.A
     conc = mat.frac/100.
-    mat_term = (constants.N_A * conc)/A
+    mat_term = old_div((constants.N_A * conc),A)
     return mat_term
 
 def getIsotopeDifferentialNSpec(e_a, ele, A):
@@ -320,7 +322,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
 
     f = open(fname)
     spec = {}
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(line) < 1 or line[0] == 'EMPTY':
             break
@@ -335,12 +337,12 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         # line[6] = Pre-eq ratio
         # convert from mb/MeV to cm^2/MeV
         energy = int(float(line[0])*constants.MeV_to_keV)
-        sigma = float(line[1])*constants.mb_to_cm2/constants.MeV_to_keV
+        sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)
         spec[energy] = sigma
     return spec
     
 def rebin(histo,step,minbin,maxbin):
-    nbins = (maxbin-minbin)/step
+    nbins = old_div((maxbin-minbin),step)
     newhisto = {}
     normhisto = {}
     for i in sorted(histo):
@@ -369,7 +371,7 @@ def rebin(histo,step,minbin,maxbin):
                 newhisto[overflowbin] = histo[i]*delta
                 normhisto[overflowbin] = delta
         # Otherwise, calculate the bin
-        newbin = int(minbin+int((i-minbin)/step)*step)
+        newbin = int(minbin+int(old_div((i-minbin),step))*step)
         if newbin in newhisto:
             newhisto[newbin] += histo[i]*delta
             normhisto[newbin] += delta
@@ -402,7 +404,7 @@ def readTotalNXsect(e_a,ele,A):             ###################
         print('Could not find file ', fname, file = constants.ofile)
         return 0
     f = open(fname)
-    lines = map(lambda line: line.split(), f.readlines())
+    lines = [line.split() for line in f.readlines()]
     xsect_line  = 0
     for line in lines:
         if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
@@ -455,9 +457,9 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)    # Рассчёт просуммированной функции распределения вероятностей альф по энергиям
     for [e_a, intensity] in alpha_ene_cdf:
         counter += 1
-        if counter % (int(len(alpha_ene_cdf)/100)) == 0:
+        if counter % (int(old_div(len(alpha_ene_cdf),100))) == 0:
             sys.stdout.write('\r')
-            sys.stdout.write('[%-100s] %d%%' % ('='*int(counter*100/len(alpha_ene_cdf)), 100*counter/len(alpha_ene_cdf)))
+            sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div(counter*100,len(alpha_ene_cdf))), old_div(100*counter,len(alpha_ene_cdf))))
             sys.stdout.flush()
 
         stopping_power = 0
@@ -474,7 +476,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
-            prefactors = (intensity/100.)*mat_term*delta_ea/stopping_power
+            prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power)
             xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)         #####
             total_xsect += xsect
             matname = str(mat.ele)+str(mat.A)
@@ -490,7 +492,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                     spec_tot[e] = val
 
     sys.stdout.write('\r')
-    sys.stdout.write('[%-100s] %d%%' % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
+    sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div((counter*100),len(alpha_ene_cdf))), old_div(100*(counter+1),len(alpha_ene_cdf))))
     sys.stdout.flush()
     print('', file = sys.stdout)
     # print out total spectrum

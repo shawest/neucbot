@@ -8,7 +8,7 @@ def findIsotopes(ele):
     dir = "./Data/"
     fname = dir + "abundances.dat"
     f = open(fname)
-    tokens = map(lambda line: re.split(" ", line), f.readlines())
+    tokens = [re.split(" ", line) for line in f.readlines()]
     
     isotopes = ""
 

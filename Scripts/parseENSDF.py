@@ -1,5 +1,7 @@
 #!/usr/bin/python
 from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 import sys
 import os.path
 import re
@@ -146,7 +148,7 @@ def main(argv):
 
     for i in range(0,len(energies)):
 #        print 'E =',energies[i]/1000,'\tI =',probs[i]
-        fout.write(str(energies[i]/1000)+'\t'+str(probs[i])+'\n')
+        fout.write(str(old_div(energies[i],1000))+'\t'+str(probs[i])+'\n')
 #        fout.write('{}\t{}\n'.format(energies[i]/1000, probs[i]))
 
 if __name__ == "__main__":
