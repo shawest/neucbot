@@ -13,6 +13,7 @@ import math
 import parseENSDF as ensdf
 import getNaturalIsotopes as gni
 import getAbundance as isoabund
+import chemistry
 
 
 class constants:
@@ -43,7 +44,7 @@ class material:
 def isoDir(ele,A):
     with open(r"./Data/routes.txt", "r") as file:
         return file.readlines()[14].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
-    #return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    #   return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
 
 def parseIsotope(iso):
     ele = ''
@@ -120,7 +121,7 @@ def loadChainAlphaList(fname):
             print('\t', aList_forIso, file = constants.ofile)
         for [ene,intensity] in aList_forIso:    # ene -энергия, intensity - вероятность распада в изотоп из предыдущего
             alpha_list.append([ene, old_div(intensity*br,100)])
-            print(ene, '\t\t', old_div(intensity*br,100))
+            # print(ene, '\t\t', old_div(intensity*br,100))
     return alpha_list   # список из [энергии, вероятность появления такой частицы в цепи] для всех элементов в цепи
 
 def readTargetMaterial(fname):
@@ -147,11 +148,11 @@ def readTargetMaterial(fname):
                     mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
                     # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
                     mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
-                    print(mater.get_list())
+                    #print(mater.get_list())
             else:
                 mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
                 mat_comp.append(mater)
-        else:
+        elif basename == 'j':
             if A == 0:
                 natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
                 for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
@@ -160,10 +161,10 @@ def readTargetMaterial(fname):
                     mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
                     # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
                     mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
-                    print(mater.get_list())
+                    #print(mater.get_list())
             else:
                 mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
-                mat_comp.append(mater)
+                mat_comp.append(mater)                    # массив из таких структур
 
     # Normalize
     norm = 0
@@ -183,6 +184,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
     sp_total = 0
     # First, reduce the material to combine all isotopes with the same Z
     mat_comp_reduced = {}
+        
     for mat in mat_comp:
         if mat.ele in mat_comp_reduced:
             mat_comp_reduced[mat.ele] += mat.frac
@@ -291,68 +293,111 @@ def getMatTerm(mat,mat_comp):
     mat_term = old_div((constants.N_A * conc),A)
     return mat_term
 
-def getIsotopeDifferentialNSpec(e_a, ele, A):
+def getIsotopeDifferentialNSpec(e_a, ele, A, basename):
     target = ele+str(int(A))
-    path = isoDir(ele,A) + 'NSpectra/'
+    path = isoDir(ele,A) + 'NSpectra/'  # './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
     if not os.path.exists(path):
         os.makedirs(path)
-    fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
-    outpath = isoDir(ele,A) + 'TalysOut'
-    if constants.force_recalculation:
-        print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-        print('Outpath', outpath, file = constants.ofile)
-        runTALYS(int(100*e_a)/100.,ele,A)
-           
-    # If the file does not exist, run TALYS
-    if not os.path.exists(fname): # вот тут надо переписать чтобы Жендл вписался если что 
-        if constants.run_talys: # разобраться с тем, что выводит Жендл и что делаает Талис
-            while not os.path.exists(fname):
-                print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-                print('Outpath', outpath, file = constants.ofile)
-                runTALYS(int(100*e_a)/100.,ele,A)
-                ls = os.listdir(outpath)
-        else:
-            print('Warning, no (alpha,n) data found for E_a =', e_a,'MeV on target', target,'...skipping. Consider running with the -d or -t options', file = constants.ofile)
-            return {}
-    
-    # Load the file
-    # If no output was produced, skip this energy
-    if not os.path.exists(outpath):
-        return {}
 
-    f = open(fname)
-    spec = {}
-    tokens = [line.split() for line in f.readlines()]
-    for line in tokens:
-        if len(line) < 1 or line[0] == 'EMPTY':
-            break
-        if line[0][0] == '#':
-            continue
-        # line[0] = E-out
-        # line[1] = Total
-        # line[2] = Direct
-        # line[3] = Pre-equil
-        # line[4] = Mult. preeq
-        # line[5] = Compound
-        # line[6] = Pre-eq ratio
-        # convert from mb/MeV to cm^2/MeV
-        energy = int(float(line[0])*constants.MeV_to_keV)
-        sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)
-        spec[energy] = sigma
-    return spec
+    if basename == 'j': 
+        Z = chemistry.getZ(ele)
+        fname = isoDir(ele,A) + 'JendlOut/xs_an_Z' + str(Z) + '_A' + str(int(A))+'.txt'
+        if not os.path.exists(fname):
+            #print('Could not find file ', fname, file = constants.ofile)
+            basename = 't'
+            return getIsotopeDifferentialNSpec(e_a, ele, A, basename)
+        
+        f = open(fname)
+        spec = {}
+        tokens = [line.split() for line in f.readlines()]
+        for line in tokens:
+            if line[0][0] == '#':
+                continue
+            # line[0] = E-out
+            # line[1] = Total
+            # line[2] = Direct
+            # line[3] = Pre-equil
+            # line[4] = Mult. preeq
+            # line[5] = Compound
+            # line[6] = Pre-eq ratio
+            # convert from mb/MeV to cm^2/MeV
+            energy = float(line[0])*constants.MeV_to_keV    # Умножаем на 1000
+            #sigma = old_div(float(line[1]),constants.MeV_to_keV)
+            sigma = float(line[1])  # По идее должно быть в 10 раз меньше (чтобы соответсвовать талисовым данным)
+            spec[energy] = sigma
+            
+        return spec
     
-def rebin(histo,step,minbin,maxbin):
-    nbins = old_div((maxbin-minbin),step)
-    newhisto = {}
-    normhisto = {}
-    for i in sorted(histo):
-        index = sorted(histo).index(i)
+    else :
+
+        fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
+        # Данные в файле:  
+        # a +  13C : neutron  spectrum
+        # E-incident =    4.230 (энергия альфы)
+        # 
+        # energies =   135 (количество шагов по энергии E-out)
+        # E-out    Total       Direct ...
+        # 0.100 ...
+        # 0.200 ...
+        
+        outpath = isoDir(ele,A) + 'TalysOut'
+        if constants.force_recalculation:
+            print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+            print('Outpath', outpath, file = constants.ofile)
+            runTALYS(int(100*e_a)/100.,ele,A)
+            
+        # If the file does not exist, run TALYS
+        if not os.path.exists(fname): 
+            if constants.run_talys:
+                while not os.path.exists(fname):
+                    print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+                    print('Outpath', outpath, file = constants.ofile)
+                    runTALYS(int(100*e_a)/100.,ele,A)
+                    ls = os.listdir(outpath)
+            else:
+                print('Warning, no (alpha,n) data found for E_a =', e_a,'MeV on target', target,'...skipping. Consider running with the -d or -t options', file = constants.ofile)
+                return {}
+        
+        # Load the file
+        # If no output was produced, skip this energy
+        if not os.path.exists(outpath):
+            return {}
+
+        f = open(fname)
+
+        spec = {}
+        tokens = [line.split() for line in f.readlines()]
+        for line in tokens: # Идём по энергиям E_out
+            if len(line) < 1 or line[0] == 'EMPTY':
+                break
+            if line[0][0] == '#':
+                continue
+            # line[0] = E-out
+            # line[1] = Total
+            # line[2] = Direct
+            # line[3] = Pre-equil
+            # line[4] = Mult. preeq
+            # line[5] = Compound
+            # line[6] = Pre-eq ratio
+            # convert from mb/MeV to cm^2/MeV
+            energy = int(float(line[0])*constants.MeV_to_keV)   # Умножаем на 1000
+            sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)    # Делим на 10^30
+            spec[energy] = sigma
+        return spec
+
+    
+def rebin(histo,step,minbin,maxbin):    # Histo - распределение сечения нейтронов по энергии их выхода для конкретных альфы и атома
+    nbins = old_div((maxbin-minbin),step)   # Количество столбцов в спектре
+    newhisto = {}   #
+    normhisto = {}  #
+    for i in sorted(histo): # Сортирует по энергии выхода сечения нейтронов и перебирвет их
+        index = sorted(histo).index(i)  # Номер столбца в спектре
         # Get the spacing between points
-        delta = sorted(histo)[0]
+        delta = sorted(histo)[0]    # Сечение первого столбца
         if index > 0:
-            delta = sorted(histo)[index] - sorted(histo)[index-1]
+            delta = sorted(histo)[index] - sorted(histo)[index-1]   # Разница сечений между соседями (?)
         # If the x value is too low, put it in the underflow bin (-1)
-        if i < minbin:
+        if i < minbin: 
             print('Underflow: ', i, ' (minbin = ', minbin, ')',file = constants.ofile)
             if -1 in newhisto:
                 newhisto[-1] += histo[i]*delta
@@ -371,9 +416,9 @@ def rebin(histo,step,minbin,maxbin):
                 newhisto[overflowbin] = histo[i]*delta
                 normhisto[overflowbin] = delta
         # Otherwise, calculate the bin
-        newbin = int(minbin+int(old_div((i-minbin),step))*step)
-        if newbin in newhisto:
-            newhisto[newbin] += histo[i]*delta
+        newbin = int(minbin+(int(old_div((i-minbin),step))*step))   # Расставляет newbin вместо i на расстояниях, кратных 100кэВ
+        if newbin in newhisto:  # newhisto - новая гистограмма, в которой столбцы стоят на расстояниях кратных delta_bin = 100keV
+            newhisto[newbin] += histo[i]*delta  # Сечение для данной энергии * на разницу сечений
             normhisto[newbin] += delta
         else:
             newhisto[newbin] = histo[i]*delta
@@ -397,34 +442,53 @@ def integrate(histo):
 
         integral += histo[i]*delta
     return integral
-    
-def readTotalNXsect(e_a,ele,A):             ################### 
-    fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
-    if not os.path.exists(fname):
-        print('Could not find file ', fname, file = constants.ofile)
-        return 0
-    f = open(fname)
-    lines = [line.split() for line in f.readlines()]
-    xsect_line  = 0
-    for line in lines:
-        if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
-            break
-        else:
-            xsect_line += 1
-    
-    xsect_line += 3
-    if len(lines) < xsect_line:
-        return 0
-    if lines[xsect_line][0] != 'neutron':
-        return 0
-    sigma = float(lines[xsect_line][2])
-    sigma *= constants.mb_to_cm2
-    return sigma
+
+def readTotalNXsect(e_a,ele,A,basename):
+    if basename == 'j':
+        Z = chemistry.getZ(ele)
+        fname = isoDir(ele,A) + 'JendlOut/xs_an_Z' + str(Z) + '_A' + str(int(A))+'.txt'
+        if not os.path.exists(fname):   # Если нет файла Jendl
+            #print('Could not find file ', fname, file = constants.ofile)
+            basename = 't'
+            return readTotalNXsect(e_a,ele,A,basename)
+        
+        f = open(fname)
+        lines = [line.split() for line in f.readlines()] # Массив из массивов, состоящих из слов, 
+                                                         # составляющих строки в файле
+        for line in lines:
+            if e_a < float(line[0]) :
+                sigma = float(line[1])
+        return sigma
+
+    else :
+        fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
+        if not os.path.exists(fname):
+            print('Could not find file ', fname, file = constants.ofile)
+            return 0
+        f = open(fname)
+        lines = [line.split() for line in f.readlines()] # Массив из массивов, состоящих их слов, 
+                                                        # составляющих строки в файле
+        xsect_line  = 0
+        for line in lines: # Бежим по каждой строке, ищем строку с сечением
+            if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
+                break
+            else:
+                xsect_line += 1
+        
+        xsect_line += 3 # Берём сечение нейтрона
+        if len(lines) < xsect_line:
+            return 0
+        if lines[xsect_line][0] != 'neutron':
+            return 0
+        sigma = float(lines[xsect_line][2]) # Сечение того, что выйдет нейтрон
+        sigma *= constants.mb_to_cm2   
+        return sigma
+
 
 def condense_alpha_list(alpha_list,alpha_step_size):
     # alpha_list - список энергий альфачастиц с вероятностью встретить конкретную в цепочке распада
     # alpha_step_size = шаг по энергии
-    #print(alpha_list, '\n')
+    # print(alpha_list, '\n')
     alpha_ene_cdf = []
     max_alpha = max(alpha_list) # Самая большая энергия распада + её вероятность
     #print(max_alpha, '\n')
@@ -440,7 +504,7 @@ def condense_alpha_list(alpha_list,alpha_step_size):
                 cum_int += alpha[1]
         alpha_ene_cdf.append([e_a,cum_int])
         e_a -= alpha_step_size
-        # print(e_a, '\t', cum_int)
+    #print(e_a, '\t', cum_int)
     return alpha_ene_cdf
 
 def run_alpha(alpha_list, mat_comp, e_alpha_step):
@@ -450,34 +514,40 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
 
     binsize = 0.1 # Bin size for output spectrum
 
-    spec_tot = {}   # dictonary # Спектр (интеграл)
-    xsects = {}     # dictonary # Сечение реакции
+    spec_tot = {}   # объект типа dictonary # Спектр (интеграл)
+    xsects = {}     # объект типа dictonary # Сечение реакции(?)
     total_xsect = 0
     counter = 0
-    alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)    # Рассчёт просуммированной функции распределения вероятностей альф по энергиям
-    for [e_a, intensity] in alpha_ene_cdf:
+    alpha_ene_cdf = condense_alpha_list(alpha_list,e_alpha_step)    # Рассчёт просуммированной функции распределения 
+    #                                                                 вероятностей альф по энергиям
+    stopping_power = 0
+    
+    for [e_a, intensity] in alpha_ene_cdf:     # Перебираем по энергии альфы
         counter += 1
         if counter % (int(old_div(len(alpha_ene_cdf),100))) == 0:
             sys.stdout.write('\r')
             sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div(counter*100,len(alpha_ene_cdf))), old_div(100*counter,len(alpha_ene_cdf))))
             sys.stdout.flush()
 
-        stopping_power = 0
-        if stopping_power == 0:
-            stopping_power = calcStoppingPower(e_a, mat_comp)
-        # this looks like unnecessary action 
+        stopping_power = calcStoppingPower(e_a, mat_comp)
         
-        for mat in mat_comp:
-            mat_term = getMatTerm(mat,mat_comp) 
+        for mat in mat_comp:    # перебираем разные материалы
+            
+            mat_term = getMatTerm(mat,mat_comp) # коэффициент перед интегралом по энергии
+
             # Get alpha n spectrum for this alpha and this target
-            spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A)
+            spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
+                                                                                        # Для конкретной альфы и конкретного атома 
+        
             spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
             # Add this spectrum to the total spectrum
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
-            prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power)
-            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A)         #####
+            prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
+            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
+            
+            #print (e_a,mat.ele,mat.A)
             total_xsect += xsect
             matname = str(mat.ele)+str(mat.A)
             if matname in xsects:
