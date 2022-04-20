@@ -14,7 +14,9 @@ import parseENSDF as ensdf
 import getNaturalIsotopes as gni
 import getAbundance as isoabund
 import chemistry
-
+import os
+import matplotlib.pyplot as plt
+import numpy as np
 
 class constants:
     N_A = 6.0221409e+23
@@ -40,6 +42,29 @@ class material:
         self.basename = str(b)
     def get_list(self):
         return [self.ele, self.A, self.frac, self.basename]
+
+def save(name='', fmt='png'):
+    pwd = os.getcwd()
+    iPath = './pictures/{}'.format(fmt)
+    if not os.path.exists(iPath):
+        os.mkdir(iPath)
+    os.chdir(iPath)
+    plt.savefig('{}.{}'.format(name, fmt), fmt='png')
+    os.chdir(pwd)
+    
+def makeHist(title, data):
+    # hist()
+    fig = plt.figure()
+    plt.hist(data)
+    plt.title(title)
+    plt.grid(True)
+
+fig = plt.figure()
+plt.hist({1: 4, 2: 3, 3: 7, 4: 4, 5: 1})
+plt.title('title')
+plt.grid(True)
+
+    
 
 def isoDir(ele,A):
     with open(r"./Data/routes.txt", "r") as file:
@@ -456,9 +481,12 @@ def readTotalNXsect(e_a,ele,A,basename):
         lines = [line.split() for line in f.readlines()] # Массив из массивов, состоящих из слов, 
                                                          # составляющих строки в файле
         for line in lines:
-            if e_a < float(line[0]) :
+            if e_a <= float(line[0]) :
                 sigma = float(line[1])
-        return sigma
+        return sigma                        # Добавить проверку на случай если не зашёл в иф!!! Иначе ошибка
+                                            # File "neucbot.py", line 461, in readTotalNXsect
+                                            # return sigma
+                                            # UnboundLocalError: local variable 'sigma' referenced before assignment
 
     else :
         fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
@@ -532,34 +560,40 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         stopping_power = calcStoppingPower(e_a, mat_comp)
         
         for mat in mat_comp:    # перебираем разные материалы
-            
-            mat_term = getMatTerm(mat,mat_comp) # коэффициент перед интегралом по энергии
+            Z = chemistry.getZ(mat.ele)
+            fname = 'xs_an_Z' + str(Z) + '_A' + str(int(mat.A))+'.txt'
+            with open('./Data/check/'+ fname, "a") as f:
+                
 
-            # Get alpha n spectrum for this alpha and this target
-            spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
-                                                                                        # Для конкретной альфы и конкретного атома 
-        
-            spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
-            # Add this spectrum to the total spectrum
-            delta_ea = e_alpha_step
-            if e_a - e_alpha_step < 0:
-                delta_ea = e_a
-            prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
-            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
+                mat_term = getMatTerm(mat,mat_comp) # коэффициент перед интегралом по энергии
+
+                # Get alpha n spectrum for this alpha and this target
+                spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
+                                                                                            # Для конкретной альфы и конкретного атома 
             
-            #print (e_a,mat.ele,mat.A)
-            total_xsect += xsect
-            matname = str(mat.ele)+str(mat.A)
-            if matname in xsects:
-                xsects[matname] += xsect
-            else:
-                xsects[matname] = xsect
-            for e in spec:
-                val = prefactors * spec[e]
-                if e in spec_tot:
-                    spec_tot[e] += val
+                spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
+                # Add this spectrum to the total spectrum
+                delta_ea = e_alpha_step
+                if e_a - e_alpha_step < 0:
+                    delta_ea = e_a
+                prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
+
+                xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
+                
+                #print (e_a,mat.ele,mat.A)
+                total_xsect += xsect
+                matname = str(mat.ele)+str(mat.A)
+                if matname in xsects:
+                    xsects[matname] += xsect
                 else:
-                    spec_tot[e] = val
+                    xsects[matname] = xsect
+                for e in spec:
+                    val = prefactors * spec[e]
+                    if e in spec_tot:
+                        spec_tot[e] += val
+                    else:
+                        spec_tot[e] = val
+                f.writelines(str(e_a) + '\t' + str(xsect) + '\n')
 
     sys.stdout.write('\r')
     sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div((counter*100),len(alpha_ene_cdf))), old_div(100*(counter+1),len(alpha_ene_cdf))))
