@@ -43,33 +43,21 @@ class material:
     def get_list(self):
         return [self.ele, self.A, self.frac, self.basename]
 
-def save(name='', fmt='png'):
-    pwd = os.getcwd()
-    iPath = './pictures/{}'.format(fmt)
-    if not os.path.exists(iPath):
-        os.mkdir(iPath)
-    os.chdir(iPath)
-    plt.savefig('{}.{}'.format(name, fmt), fmt='png')
-    os.chdir(pwd)
-    
-def makeHist(title, data):
-    # hist()
-    fig = plt.figure()
-    plt.hist(data)
-    plt.title(title)
-    plt.grid(True)
-
-fig = plt.figure()
-plt.hist({1: 4, 2: 3, 3: 7, 4: 4, 5: 1})
-plt.title('title')
-plt.grid(True)
-
-    
-
 def isoDir(ele,A):
     with open(r"./Data/routes.txt", "r") as file:
         return file.readlines()[14].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
     #   return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+
+
+
+def save(name='', fmt='png'):
+    pwd = os.getcwd()
+    iPath = './Pictuers/'
+    if not os.path.exists(iPath):
+        os.mkdir(iPath)
+    os.chdir(iPath)
+    plt.savefig(name)
+    os.chdir(pwd)
 
 def parseIsotope(iso):
     ele = ''
@@ -330,28 +318,17 @@ def getIsotopeDifferentialNSpec(e_a, ele, A, basename):
         if not os.path.exists(fname):
             #print('Could not find file ', fname, file = constants.ofile)
             basename = 't'
-            return getIsotopeDifferentialNSpec(e_a, ele, A, basename)
+            return getIsotopeDifferentialNSpec(e_a, ele, A, basename, 1)
         
         f = open(fname)
         spec = {}
         tokens = [line.split() for line in f.readlines()]
-        for line in tokens:
-            if line[0][0] == '#':
-                continue
-            # line[0] = E-out
-            # line[1] = Total
-            # line[2] = Direct
-            # line[3] = Pre-equil
-            # line[4] = Mult. preeq
-            # line[5] = Compound
-            # line[6] = Pre-eq ratio
-            # convert from mb/MeV to cm^2/MeV
-            energy = float(line[0])*constants.MeV_to_keV    # Умножаем на 1000
-            #sigma = old_div(float(line[1]),constants.MeV_to_keV)
-            sigma = float(line[1])  # По идее должно быть в 10 раз меньше (чтобы соответсвовать талисовым данным)
-            spec[energy] = sigma
-            
-        return spec
+        if readTotalNXsect(e_a, ele, A, 't') == 0:
+            return getIsotopeDifferentialNSpec(e_a, ele, A, 't', 1)
+        else: 
+            NormK = old_div(readTotalNXsect(e_a, ele, A, basename), readTotalNXsect(e_a, ele, A, 't') )    
+            # Нормировочный коэфф для спектра выходящих нейтронов
+            return getIsotopeDifferentialNSpec(e_a, ele, A, 't', NormK)
     
     else :
 
@@ -406,7 +383,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A, basename):
             # line[6] = Pre-eq ratio
             # convert from mb/MeV to cm^2/MeV
             energy = int(float(line[0])*constants.MeV_to_keV)   # Умножаем на 1000
-            sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)    # Делим на 10^30
+            sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)*K    # Делим на 10^30
             spec[energy] = sigma
         return spec
 
@@ -420,7 +397,7 @@ def rebin(histo,step,minbin,maxbin):    # Histo - распределение с�
         # Get the spacing between points
         delta = sorted(histo)[0]    # Сечение первого столбца
         if index > 0:
-            delta = sorted(histo)[index] - sorted(histo)[index-1]   # Разница сечений между соседями (?)
+            delta = sorted(histo)[index] - sorted(histo)[index-1]   # Разница энергий между соседями (?)
         # If the x value is too low, put it in the underflow bin (-1)
         if i < minbin: 
             print('Underflow: ', i, ' (minbin = ', minbin, ')',file = constants.ofile)
@@ -473,7 +450,7 @@ def readTotalNXsect(e_a,ele,A,basename):
         Z = chemistry.getZ(ele)
         fname = isoDir(ele,A) + 'JendlOut/xs_an_Z' + str(Z) + '_A' + str(int(A))+'.txt'
         if not os.path.exists(fname):   # Если нет файла Jendl
-            #print('Could not find file ', fname, file = constants.ofile)
+            print('No such Jendl file ', fname, file = constants.ofile)
             basename = 't'
             return readTotalNXsect(e_a,ele,A,basename)
         
@@ -560,40 +537,36 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         stopping_power = calcStoppingPower(e_a, mat_comp)
         
         for mat in mat_comp:    # перебираем разные материалы
-            Z = chemistry.getZ(mat.ele)
-            fname = 'xs_an_Z' + str(Z) + '_A' + str(int(mat.A))+'.txt'
-            with open('./Data/check/'+ fname, "a") as f:
-                
 
-                mat_term = getMatTerm(mat,mat_comp) # коэффициент перед интегралом по энергии
+            mat_term = getMatTerm(mat,mat_comp) # коэффициент перед интегралом по энергии
 
-                # Get alpha n spectrum for this alpha and this target
-                spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
-                                                                                            # Для конкретной альфы и конкретного атома 
+            # Get alpha n spectrum for this alpha and this target
+            spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
+                                                                                        # Для конкретной альфы и конкретного атома 
+            f = open('text.txt', 'a')
+            spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin)
+            # Add this spectrum to the total spectrum
+            delta_ea = e_alpha_step
+            if e_a - e_alpha_step < 0:
+                delta_ea = e_a
+            prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
+
+            xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
             
-                spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
-                # Add this spectrum to the total spectrum
-                delta_ea = e_alpha_step
-                if e_a - e_alpha_step < 0:
-                    delta_ea = e_a
-                prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
-
-                xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
-                
-                #print (e_a,mat.ele,mat.A)
-                total_xsect += xsect
-                matname = str(mat.ele)+str(mat.A)
-                if matname in xsects:
-                    xsects[matname] += xsect
+            #print (e_a,mat.ele,mat.A)
+            total_xsect += xsect
+            matname = str(mat.ele)+str(mat.A)
+            if matname in xsects:
+                xsects[matname] += xsect
+            else:
+                xsects[matname] = xsect
+            for e in spec:
+                val = prefactors * spec[e]
+                if e in spec_tot:
+                    spec_tot[e] += val
                 else:
-                    xsects[matname] = xsect
-                for e in spec:
-                    val = prefactors * spec[e]
-                    if e in spec_tot:
-                        spec_tot[e] += val
-                    else:
-                        spec_tot[e] = val
-                f.writelines(str(e_a) + '\t' + str(xsect) + '\n')
+                    spec_tot[e] = val
+
 
     sys.stdout.write('\r')
     sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div((counter*100),len(alpha_ene_cdf))), old_div(100*(counter+1),len(alpha_ene_cdf))))
@@ -608,6 +581,16 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     print('# Integral of spectrum = ', integrate(newspec), ' n/decay', file = constants.ofile)
     for e in sorted(newspec):
         print(e, newspec[e], file = constants.ofile)
+    # hist()
+    fig, ax = plt.subplots()
+
+    ax.hist(newspec, bins=250, linewidth=0.5, edgecolor="white")
+
+    #fig = plt.figure()
+    #plt.hist(newspec)
+    #plt.title('Simple histogramm')
+    #plt.grid(True)
+    save('pic.png')
 
 def help_message():
     print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database; default behavior is v2)\n\t\t-d v1 (use V1 database, TALYS-1.6)\n\t-d v2 (use V2 database, TALYS-1.95)\n\t-o [output file name]', file = sys.stdout)
