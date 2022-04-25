@@ -312,80 +312,60 @@ def getIsotopeDifferentialNSpec(e_a, ele, A, basename):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    if basename == 'j': 
-        Z = chemistry.getZ(ele)
-        fname = isoDir(ele,A) + 'JendlOut/xs_an_Z' + str(Z) + '_A' + str(int(A))+'.txt'
-        if not os.path.exists(fname):
-            #print('Could not find file ', fname, file = constants.ofile)
-            basename = 't'
-            return getIsotopeDifferentialNSpec(e_a, ele, A, basename, 1)
-        
-        f = open(fname)
-        spec = {}
-        tokens = [line.split() for line in f.readlines()]
-        if readTotalNXsect(e_a, ele, A, 't') == 0:
-            return getIsotopeDifferentialNSpec(e_a, ele, A, 't', 1)
-        else: 
-            NormK = old_div(readTotalNXsect(e_a, ele, A, basename), readTotalNXsect(e_a, ele, A, 't') )    
-            # Нормировочный коэфф для спектра выходящих нейтронов
-            return getIsotopeDifferentialNSpec(e_a, ele, A, 't', NormK)
+    fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
+    # Данные в файле:  
+    # a +  13C : neutron  spectrum
+    # E-incident =    4.230 (энергия альфы)
+    # 
+    # energies =   135 (количество шагов по энергии E-out)
+    # E-out    Total       Direct ...
+    # 0.100 ...
+    # 0.200 ...
     
-    else :
-
-        fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
-        # Данные в файле:  
-        # a +  13C : neutron  spectrum
-        # E-incident =    4.230 (энергия альфы)
-        # 
-        # energies =   135 (количество шагов по энергии E-out)
-        # E-out    Total       Direct ...
-        # 0.100 ...
-        # 0.200 ...
+    outpath = isoDir(ele,A) + 'TalysOut'
+    if constants.force_recalculation:
+        print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+        print('Outpath', outpath, file = constants.ofile)
+        runTALYS(int(100*e_a)/100.,ele,A)
         
-        outpath = isoDir(ele,A) + 'TalysOut'
-        if constants.force_recalculation:
-            print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-            print('Outpath', outpath, file = constants.ofile)
-            runTALYS(int(100*e_a)/100.,ele,A)
-            
-        # If the file does not exist, run TALYS
-        if not os.path.exists(fname): 
-            if constants.run_talys:
-                while not os.path.exists(fname):
-                    print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-                    print('Outpath', outpath, file = constants.ofile)
-                    runTALYS(int(100*e_a)/100.,ele,A)
-                    ls = os.listdir(outpath)
-            else:
-                print('Warning, no (alpha,n) data found for E_a =', e_a,'MeV on target', target,'...skipping. Consider running with the -d or -t options', file = constants.ofile)
-                return {}
-        
-        # Load the file
-        # If no output was produced, skip this energy
-        if not os.path.exists(outpath):
+    # If the file does not exist, run TALYS
+    if not os.path.exists(fname): 
+        if constants.run_talys:
+            while not os.path.exists(fname):
+                print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
+                print('Outpath', outpath, file = constants.ofile)
+                runTALYS(int(100*e_a)/100.,ele,A)
+                ls = os.listdir(outpath)
+        else:
+            print('Warning, no (alpha,n) data found for E_a =', e_a,'MeV on target', target,'...skipping. Consider running with the -d or -t options', file = constants.ofile)
             return {}
+    
+    # Load the file
+    # If no output was produced, skip this energy
+    if not os.path.exists(outpath):
+        return {}
 
-        f = open(fname)
+    f = open(fname)
 
-        spec = {}
-        tokens = [line.split() for line in f.readlines()]
-        for line in tokens: # Идём по энергиям E_out
-            if len(line) < 1 or line[0] == 'EMPTY':
-                break
-            if line[0][0] == '#':
-                continue
-            # line[0] = E-out
-            # line[1] = Total
-            # line[2] = Direct
-            # line[3] = Pre-equil
-            # line[4] = Mult. preeq
-            # line[5] = Compound
-            # line[6] = Pre-eq ratio
-            # convert from mb/MeV to cm^2/MeV
-            energy = int(float(line[0])*constants.MeV_to_keV)   # Умножаем на 1000
-            sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)*K    # Делим на 10^30
-            spec[energy] = sigma
-        return spec
+    spec = {}
+    tokens = [line.split() for line in f.readlines()]
+    for line in tokens: # Идём по энергиям E_out
+        if len(line) < 1 or line[0] == 'EMPTY':
+            break
+        if line[0][0] == '#':
+            continue
+        # line[0] = E-out
+        # line[1] = Total
+        # line[2] = Direct
+        # line[3] = Pre-equil
+        # line[4] = Mult. preeq
+        # line[5] = Compound
+        # line[6] = Pre-eq ratio
+        # convert from mb/MeV to cm^2/MeV
+        energy = int(float(line[0])*constants.MeV_to_keV)   # Умножаем на 1000
+        sigma = old_div(float(line[1])*constants.mb_to_cm2,constants.MeV_to_keV)    # Делим на 10^30
+        spec[energy] = sigma * old_div(readTotalNXsect(e_a, ele, A, basename), readTotalNXsect(e_a, ele, A, 't')) # Нормировка
+    return spec
 
     
 def rebin(histo,step,minbin,maxbin):    # Histo - распределение сечения нейтронов по энергии их выхода для конкретных альфы и атома
