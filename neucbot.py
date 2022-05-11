@@ -153,31 +153,17 @@ def readTargetMaterial(fname):
         frac = float(line[2])
         basename = line[3].lower() if len(line) == 4 else 't'
 
-        if basename == 't':
-            if A == 0:
-                natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
-                for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
-                    abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
-                    mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
-                    # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
-                    mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
-                    #print(mater.get_list())
-            else:
-                mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
-                mat_comp.append(mater)
-        elif basename == 'j':
-            if A == 0:
-                natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
-                for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
-
-                    abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
-                    mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
-                    # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
-                    mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
-                    #print(mater.get_list())
-            else:
-                mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
-                mat_comp.append(mater)                    # массив из таких структур
+        if A == 0:
+            natIso_list = gni.findIsotopes(ele).split() # массовые числа изотопов ele
+            for A_i in natIso_list: # разные массовые числа одного изтопа по очереди`
+                abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))    # ищет распространённость конкретного изотопа 
+                mater = material(ele,A_i,frac*abund/100., basename)   # структура из названия элмента, его массы, 
+                # и (содержания в веществе)*(распространённость)/100 (=? массовая доля)
+                mat_comp.append(mater)  # вставляет в конец списка mat_comp строку mater
+                #print(mater.get_list())
+        else:
+            mater = material(ele,A,frac, basename)    # структура из названия элемента, его массы, и масоовой доли в веществе
+            mat_comp.append(mater)                    # массив из таких структур
 
     # Normalize
     norm = 0
@@ -186,12 +172,9 @@ def readTargetMaterial(fname):
     for mat in mat_comp:
         mat.frac /= norm
 
-    if basename == 'j':
-        mat_comp.append('j')    # это было нужно для того, чтобы видеть наличие J/T в '-c'
-
     return mat_comp
 
-def calcStoppingPower(e_alpha_MeV,mat_comp):
+def calcStoppingPower(e_alpha_MeV, mat_comp):
     # Stopping power as units of keV/(mg/cm^2) or MeV/(g/cm^2)
     e_alpha = e_alpha_MeV
     sp_total = 0
@@ -430,7 +413,7 @@ def readTotalNXsect(e_a,ele,A,basename):
         Z = chemistry.getZ(ele)
         fname = isoDir(ele,A) + 'JendlOut/xs_an_Z' + str(Z) + '_A' + str(int(A))+'.txt'
         if not os.path.exists(fname):   # Если нет файла Jendl
-            print('No such Jendl file ', fname, file = constants.ofile)
+            #print('No such Jendl file ', fname, file = constants.ofile)
             basename = 't'
             return readTotalNXsect(e_a,ele,A,basename)
         
@@ -523,12 +506,12 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             # Get alpha n spectrum for this alpha and this target
             spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A, mat.basename)   # Распределение сечения нейтронов по энергии. 
                                                                                         # Для конкретной альфы и конкретного атома 
-            f = open('text.txt', 'a')
             spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin)
             # Add this spectrum to the total spectrum
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
+            
             prefactors = old_div((intensity/100.)*mat_term*delta_ea,stopping_power) # подынтегральное выражение
 
             xsect = prefactors * readTotalNXsect(e_a,mat.ele,mat.A,mat.basename)         # Готовое значение просуммированного спектра
