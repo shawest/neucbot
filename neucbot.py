@@ -449,22 +449,39 @@ def integrate(histo):
 
 def readTotalNXsect(e_a, ele, A, basename):
     if basename == 'j':
+
+        # Обычный режим
         Z = chemistry.getZ(ele)
         fname = isoDir(ele, A) + 'JendlOut/xs_an_Z' + \
             str(Z) + '_A' + str(int(A))+'.txt'
+        #'''
+       
+        '''# Тестовый режим
+        Z = chemistry.getZ(ele)
+        fname = './Data/check/xs_an_Z' + \
+            str(Z) + '_A' + str(int(A))+'.txt'
+        # '''
+
         if not os.path.exists(fname):   # Если нет файла Jendl
             # print('No such Jendl file ', fname, file = constants.ofile)
             basename = 't'
             return readTotalNXsect(e_a, ele, A, basename)
-
+        
         f = open(fname)
+        
         # Массив из массивов, состоящих из слов,
         lines = [line.split() for line in f.readlines()]
         # составляющих строки в файле
+        sigma = 0
         for line in lines:
-            if e_a <= float(line[0]):
+            if e_a >= float(line[0]):           # Тут знак >= тк файлы jendl идут по возрастанию энергии. (файлы talys - по убыванию, поэтому там знак <= )
                 sigma = float(line[1])
+        
         # Добавить проверку на случай если не зашёл в иф!!! Иначе ошибка
+        ''' Проверка завышенных значений выхода для jendl
+        if ele == 'c' and A == 12:
+            print(e_a, sigma)
+        '''
         return sigma
         # File "neucbot.py", line 461, in readTotalNXsect
         # return sigma
@@ -492,7 +509,7 @@ def readTotalNXsect(e_a, ele, A, basename):
         if lines[xsect_line][0] != 'neutron':
             return 0
         sigma = float(lines[xsect_line][2])  # Сечение того, что выйдет нейтрон
-        sigma *= constants.mb_to_cm2
+        
         return sigma
 
 
@@ -536,20 +553,32 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     stopping_power = 0
 
     for [e_a, intensity] in alpha_ene_cdf:     # Перебор по энергии альфы
+        #print(e_a)
         counter += 1
         if counter % (int(old_div(len(alpha_ene_cdf), 100))) == 0:
             sys.stdout.write('\r')
             sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div(counter*100,
                              len(alpha_ene_cdf))), old_div(100*counter, len(alpha_ene_cdf))))
             sys.stdout.flush()
-
+        
         stopping_power = calcStoppingPower(e_a, mat_comp)
 
         for mat in mat_comp:    # перебираем разные материалы
-
+            
+            
+            '''### запись данных talys в формате jendl для дальнейшей проверки
+            sigma = readTotalNXsect(e_a, mat.ele, mat.A, mat.basename)
+            Z = chemistry.getZ(mat.ele)
+            fname = './Data/check/xs_an_Z' + \
+                str(Z) + '_A' + str(int(mat.A))+'.txt'
+            ch = open(fname, 'a')
+            ch.write(str(e_a)+ '\t'+str(sigma)+'\n')
+            ###'''
+            
+            
             # коэффициент перед интегралом по энергии
             mat_term = getMatTerm(mat, mat_comp)
-
+            
             # Get alpha n spectrum for this alpha and this target
             # Распределение сечения нейтронов по энергии.
             spec_raw = getIsotopeDifferentialNSpec(
@@ -566,7 +595,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             prefactors = old_div(
                 (intensity/100.)*mat_term*delta_ea, stopping_power)
 
-            # Готовое значение просуммированного спектра
+            # Значение просуммированного спектра (без вычисления интеграла)
             xsect = prefactors * \
                 readTotalNXsect(e_a, mat.ele, mat.A, mat.basename)
 
@@ -599,15 +628,17 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     #for e in sorted(newspec):
     #    print(e, newspec[e], file=constants.ofile)
     # hist()
-    fig, ax = plt.subplots()
+    
+    # График
+    #fig, ax = plt.subplots()
 
-    ax.hist(newspec, bins=250, linewidth=0.5, edgecolor="white")
+    #ax.hist(newspec, bins=250, linewidth=0.5, edgecolor="white")
 
     #fig = plt.figure()
     # plt.hist(newspec)
     #plt.title('Simple histogramm')
     # plt.grid(True)
-    save('pic.png')
+    #save('pic.png')
 
 
 def help_message():
