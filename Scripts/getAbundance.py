@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 import re
 
@@ -6,17 +7,17 @@ def findAbundance(iso):
     dir = "./Data/"
     fname = dir + "abundances.dat"
     f = open(fname)
-    tokens = map(lambda line: re.split(" ", line), f.readlines())
+    tokens = [re.split(" ", line) for line in f.readlines()]
 
     for words in tokens:
         for word in words:
             if word == iso:
-                return filter(None,words)[2]
+                return [_f for _f in words if _f][2]  # ['a', '1', None, '4.4'] -> ['a', '1', '4.4']
 
 def main(argv):
     iso = sys.argv[1]
     abundance = findAbundance(iso)
-    print abundance
+    print(abundance)
     return abundance
 
 if __name__ == '__main__' :
