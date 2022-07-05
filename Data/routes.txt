@@ -1,0 +1,104 @@
+# I wrote down all the routes used in programm 
+# and also wrote context where each was used (for better undestanding).
+# First comes route, than name of function 
+# and than copy from code until needed line
+----------------------------
+
+./Scripts/
+''' context:
+    in declaration
+    ---
+    "sys.path.insert(0, './Scripts/')"
+    ---
+'''
+
+./Data/Isotopes/
+''' context:
+ 1. in isoDir(ele,A)
+    ---
+    return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    --- 
+ 2. in main()
+    ---
+    if constants.download_data:
+        for mat in mat_comp:
+            ele = mat.ele
+            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
+    ---
+
+./AlphaLists/
+''' context:
+    in generateAlphaFileName(ele,A)
+    ---
+    outdir = './AlphaLists/'
+    ---
+
+Alphas.dat
+''' context:
+    in generateAlphaFileName(ele,A)
+    ---
+    fName = outdir + ele.capitalize() + str(A) + 'Alphas.dat'
+    ---
+
+./Data/StoppingPowers/
+''' context:
+    in calcStoppingPower(e_alpha_MeV,mat_comp)
+    ---
+    for mat in mat_comp_reduced:
+        spDir = './Data/StoppingPowers/'
+    ---
+
+#In def runTALYS(e_a, ele, A) there are also 'NSpectra/', 'TalysOut/' and 'TalysInputs/', but I dont think it needs to be taken here
+
+#In def getIsotopeDifferentialNSpec(e_a, ele, A) There are 'NSpectra/' and 'TalysOut'. Same thing
+
+./runscript_temp.sh
+''' context:
+    in runTALYS(e_a, ele, A)
+    ---
+    runscript_fname = "./runscript_temp.sh"
+    ---
+
+#!/usr/bin/bash\n\n
+''' context:
+    in runTALYS(e_a, ele, A)
+    ---
+    runscript_f.write("#!/usr/bin/bash\n\n"+bashcmd)
+    ---
+
+TalysOut/outputE
+''' context:
+    in def readTotalNXsect(e_a,ele,A)
+    ---
+    fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
+    ---
+
+./Scripts/download_element.sh 
+''' context: 
+    in main()
+    ---
+    if constants.download_data:
+        for mat in mat_comp:
+            ele = mat.ele
+            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
+                if constants.download_version == 2:
+                    print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                    bashcmd = './Scripts/download_element.sh ' + ele
+    ---
+
+./Scripts/download_element_v1.sh 
+''' context: 
+    in main()
+    ---
+    if constants.download_data:
+        for mat in mat_comp:
+            ele = mat.ele
+            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
+                if constants.download_version == 2:
+                    print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                    bashcmd = './Scripts/download_element.sh ' + ele
+                    process = subprocess.call(bashcmd,shell=True)
+                elif constants.download_version == 1:
+                    print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                    bashcmd = './Scripts/download_element_v1.sh ' + ele
+    ---

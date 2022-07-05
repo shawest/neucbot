@@ -1,11 +1,14 @@
 #!/usr/bin/python
-import urllib2
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+import urllib.request, urllib.error, urllib.parse
 import re
 import sys
 import chemistry
 import socket
-from urllib2 import Request
-from sgmllib import SGMLParser
+from urllib.request import Request
+from sgmllib import SGMLParser      # лучше использовать библиотеку lxml    https://stackoverflow.com/questions/4352320/sgml-parsing-in-python3-1
 
 class URLLister(SGMLParser):
   def reset(self):
@@ -25,13 +28,19 @@ def getPage(url, ele, A):
     req  = Request(url)
     page = ''
     try:
-        page = urllib2.urlopen(req,timeout=3)
+        page = urllib.request.urlopen(req,timeout=3)
     except socket.timeout:
-        print "ERROR: TIMEOUT"
-        print url
+        print("ERROR: TIMEOUT")
+        print(url)
 
     text = re.sub('<.*>','',page.read())
     text = text[re.search('[0-9]',text).start():]
+    newtext = ""
+    for line in text.split('\n'):
+      if(len(line)>1):
+        newtext += line + '\n'
+    text = re.sub(r'^\t','',newtext,flags=re.MULTILINE)
+    #print(text)
     f.write(text)
     return page.read()
 
@@ -41,8 +50,9 @@ def getURL(ele, A):
     dau_Z = Z-2
     dau_ele = chemistry.getElement(dau_Z)
 
-    nndc_url = 'http://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
-    nndc_page = urllib2.urlopen(nndc_url,timeout=3)
+    # nndc_url = 'https://www.nndc.bnl.gov/chart/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    nndc_url = 'https://www.nndc.bnl.gov/nudat2/decaysearchdirect.jsp?nuc='+str(A)+ele.upper()+'&unc=nds'
+    nndc_page = urllib.request.urlopen(nndc_url,timeout=3)
     parser = URLLister()
     parser.feed(nndc_page.read())
     parser.close()
@@ -54,16 +64,17 @@ def getURL(ele, A):
             url_ends.append(mod_url)
 
     for url_end in url_ends:        
-        url = 'http://www.nndc.bnl.gov/chart/' + url_end
+        #url = 'https://www.nndc.bnl.gov/chart/' + url_end
+        url = 'https://www.nndc.bnl.gov/nudat2/' + url_end
 
-        print 'Retrieving ENSDF data from:\t',url
+        print('Retrieving ENSDF data from:\t',url)
         req = Request(url)
         page = ''
         try:
-            page = urllib2.urlopen(req,timeout=3)
-        except (socket.timeout, urllib2.URLError):
-            print "ERROR: TIMEOUT"
-            print url
+            page = urllib.request.urlopen(req,timeout=3)
+        except (socket.timeout, urllib.error.URLError):
+            print("ERROR: TIMEOUT")
+            print(url)
 
         text = re.sub('<.*>','',page.read())
 
@@ -81,7 +92,7 @@ def getURL(ele, A):
         else :
             continue
         if len(text) < 30 :
-            print 'WARNING: Could not find alpha for ele = {}, A = {}'.format(ele,A)
+            print('WARNING: Could not find alpha for ele = {}, A = {}'.format(ele,A))
             break
 
         # Check that this page is for a ground state decay
@@ -96,7 +107,7 @@ def getURL(ele, A):
 
 def main(argv):
     if(len(argv) != 3):
-        print 'Usage: ./getENSDFdata.py [element] [A]'
+        print('Usage: ./getENSDFdata.py [element] [A]')
         return
 
     ele = argv[1]
