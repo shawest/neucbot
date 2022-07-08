@@ -88,7 +88,7 @@ directory there are the following subdirectories:
 * ./Data/StopingPowers/ : SRIM-generated stopping powers for each element
 * ./Data/Decays/        : Downloaded ENSDF files with alpha decay data for given isotopes
 * ./Data/abundances.dat : Natural abundances of every isotope, from [\[4\]](#4)
-* ./Data/Isotopes/      : TALYS-generated (alpha,n) reaction data library
+* ./Data/Isotopes/      : (alpha,n) reaction data library
 
 Within the ./Data/Isotopes/ directory, there is a 
 subdirectory for each element, and a subdirectory within 
@@ -108,6 +108,8 @@ for producing various excited nuclei and gammas at various
 energies. These files may be of particular interest to people
 wishing to explore gammas that may be correlated with 
 (alpha,n) neutrons.
+
+The JendlOut/ direcotry contains the output from JENDL. It consists of alpha particle energy and the corresponding cross section. Calculations using JENDL allows to obtain only total neutron yield, not a spectrum.
 
 For questions or comments, feel free to send me an email.
 
@@ -162,13 +164,13 @@ downloads the database for that element, setting it up
 properly. This script can be run from ./neucbot with the
 command
 ```bash
-./Scripts/download_element.sh X
+./Scripts/download_element_v1.sh X
 ```
 where X is the chemical symbol of the element. 
 
 Data from previous versions can be downloaded using the alternative script labeled with the corresponding version. E.g.,
 ```bash
-./Scripts/download_element_v2.sh X
+./Scripts/download_element.sh X
 ```
 
 If NeuCBOT is run with the -d option, it will automatically run download_element.sh for each element missing from your local database, using the calculations corresponding to the latest versions.
@@ -227,11 +229,16 @@ If the -o option is not specified, all output will be displayed to the terminal.
 
 If the -s option is not specified, a default step size of 0.01 MeV will be assumed.
 
+TALYS/JENDL databases can be select by adding letter t or j (accordingly) both in uppercase and lowercase.
+If database is not selected or there is no JENDL data, the calculations will use data from TALYS.
+
 NeuCBOT comes with acrylic as an example material, stored in ./Materials/Acrylic.dat. 
 
 We also provide the <sup>232</sup>Th, <sup>235</sup>U, and upper and lower <sup>238</sup>U decay chains (split above <sup>226</sup>Ra), as well as the <sup>210</sup>Pb decay chain as example decay chains. These chains are stored in ./Chains/.
 
 Examples of alpha lists can be seen in ./AlphaLists/ where we include alpha energies emitted by several isotopes found in the decay chains.
+
+
 
 Example usage of neucbot with both of these options is given below
 
