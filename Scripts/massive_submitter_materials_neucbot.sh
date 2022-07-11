@@ -57,26 +57,26 @@ echo "Start!"
 # python3 ./neucbot.py -m Materials/Al2O3 -c Chains/U238middleChain_SaG4n.dat -o Al2O3_neucbot_jendl_U238middle.txt > Al2O3_neucbot_jendl_U238middle.out &
 
 
-# python3 ./neucbot.py -m Materials/B -c Chains/Th232Chain.dat -o B_neucbot_jendl_Th232.txt > B_neucbot_jendl_Th232.out &
+python3 ./neucbot.py -m Materials/B -c Chains/Th232Chain.dat -o B_neucbot_jendl_Th232.txt > B_neucbot_jendl_Th232.out &
 
-# python3 ./neucbot.py -m Materials/B -c Chains/U235Chain.dat -o B_neucbot_jendl_U235.txt > B_neucbot_jendl_U235.out &
+python3 ./neucbot.py -m Materials/B -c Chains/U235Chain.dat -o B_neucbot_jendl_U235.txt > B_neucbot_jendl_U235.out &
 
-# python3 ./neucbot.py -m Materials/B -c Chains/U238lowerChain.dat -o B_neucbot_jendl_U238lower.txt > B_neucbot_jendl_U238lower.out &
+python3 ./neucbot.py -m Materials/B -c Chains/U238lowerChain.dat -o B_neucbot_jendl_U238lower.txt > B_neucbot_jendl_U238lower.out &
 
-# python3 ./neucbot.py -m Materials/B -c Chains/U238upperChain.dat -o B_neucbot_jendl_U238upper.txt > B_neucbot_jendl_U238upper.out &
+python3 ./neucbot.py -m Materials/B -c Chains/U238upperChain.dat -o B_neucbot_jendl_U238upper.txt > B_neucbot_jendl_U238upper.out &
 
-# python3 ./neucbot.py -m Materials/B -c Chains/U238middleChain_SaG4n.dat -o B_neucbot_jendl_U238middle.txt > B_neucbot_jendl_U238middle.out &
+python3 ./neucbot.py -m Materials/B -c Chains/U238middleChain_SaG4n.dat -o B_neucbot_jendl_U238middle.txt > B_neucbot_jendl_U238middle.out &
 
 
-# python3 ./neucbot.py -m Materials/Be -c Chains/Th232Chain.dat -o Be_neucbot_jendl_Th232.txt > Be_neucbot_jendl_Th232.out &
+python3 ./neucbot.py -m Materials/Be -c Chains/Th232Chain.dat -o Be_neucbot_jendl_Th232.txt > Be_neucbot_jendl_Th232.out &
 
-# python3 ./neucbot.py -m Materials/Be -c Chains/U235Chain.dat -o Be_neucbot_jendl_U235.txt > Be_neucbot_jendl_U235.out &
+python3 ./neucbot.py -m Materials/Be -c Chains/U235Chain.dat -o Be_neucbot_jendl_U235.txt > Be_neucbot_jendl_U235.out &
 
-# python3 ./neucbot.py -m Materials/Be -c Chains/U238lowerChain.dat -o Be_neucbot_jendl_U238lower.txt > Be_neucbot_jendl_U238lower.out &
+python3 ./neucbot.py -m Materials/Be -c Chains/U238lowerChain.dat -o Be_neucbot_jendl_U238lower.txt > Be_neucbot_jendl_U238lower.out &
 
-# python3 ./neucbot.py -m Materials/Be -c Chains/U238upperChain.dat -o Be_neucbot_jendl_U238upper.txt > Be_neucbot_jendl_U238upper.out &
+python3 ./neucbot.py -m Materials/Be -c Chains/U238upperChain.dat -o Be_neucbot_jendl_U238upper.txt > Be_neucbot_jendl_U238upper.out &
 
-# python3 ./neucbot.py -m Materials/Be -c Chains/U238middleChain_SaG4n.dat -o Be_neucbot_jendl_U238middle.txt > Be_neucbot_jendl_U238middle.out &
+python3 ./neucbot.py -m Materials/Be -c Chains/U238middleChain_SaG4n.dat -o Be_neucbot_jendl_U238middle.txt > Be_neucbot_jendl_U238middle.out &
 
 
 python3 ./neucbot.py -m Materials/BeO -c Chains/Th232Chain.dat -o BeO_neucbot_jendl_Th232.txt > BeO_neucbot_jendl_Th232.out &
@@ -154,6 +154,7 @@ python3 ./neucbot.py -m Materials/SiO2 -c Chains/U238lowerChain.dat -o SiO2_neuc
 python3 ./neucbot.py -m Materials/SiO2 -c Chains/U238upperChain.dat -o SiO2_neucbot_jendl_U238upper.txt > SiO2_neucbot_jendl_U238upper.out &
 
 python3 ./neucbot.py -m Materials/SiO2 -c Chains/U238middleChain_SaG4n.dat -o SiO2_neucbot_jendl_U238middle.txt > SiO2_neucbot_jendl_U238middle.out &
+
 
 #=======================================================================
 
