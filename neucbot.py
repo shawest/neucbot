@@ -482,6 +482,7 @@ def readTotalNXsect(e_a, ele, A, basename):
         if ele == 'c' and A == 12:
             print(e_a, sigma)
         '''
+        #sigma *= 1.e-27
         return sigma
         # File "neucbot.py", line 461, in readTotalNXsect
         # return sigma
@@ -509,7 +510,7 @@ def readTotalNXsect(e_a, ele, A, basename):
         if lines[xsect_line][0] != 'neutron':
             return 0
         sigma = float(lines[xsect_line][2])  # Сечение того, что выйдет нейтрон
-        
+        sigma *= constants.mb_to_cm2
         return sigma
 
 
@@ -601,17 +602,19 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
 
             #print (e_a,mat.ele,mat.A)
             total_xsect += xsect
-            matname = str(mat.ele)+str(mat.A)
+            matname = str(mat.ele)+str(int(mat.A))
             if matname in xsects:
                 xsects[matname] += xsect
             else:
                 xsects[matname] = xsect
-            for e in spec:
+            '''
+                for e in spec:
                 val = prefactors * spec[e]
                 if e in spec_tot:
                     spec_tot[e] += val
                 else:
                     spec_tot[e] = val
+            #'''
 
     sys.stdout.write('\r')
     sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div((counter*100),
@@ -624,12 +627,14 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     print('# Total neutron yield = ', total_xsect, ' n/decay', file=constants.ofile)
     for x in sorted(xsects):
         print('\t', x, xsects[x], file=constants.ofile)
+    '''
     print('# Integral of spectrum = ', integrate(newspec), ' n/decay', file=constants.ofile)
-    #for e in sorted(newspec):
-    #    print(e, newspec[e], file=constants.ofile)
+    for e in sorted(newspec):
+        print(e, newspec[e], file=constants.ofile)
+    '''
+    # График
     # hist()
     
-    # График
     #fig, ax = plt.subplots()
 
     #ax.hist(newspec, bins=250, linewidth=0.5, edgecolor="white")
