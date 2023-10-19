@@ -491,7 +491,7 @@ def main():
                 if (not version_choice[0] == '-') and (version_choice[0].lower() == 'v'):
                     version_num = int(version_choice[1])
                     constants.download_version = version_num
-                    print('Downloading data from version',version_num)
+            print('Downloading data from version',version_num)
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
