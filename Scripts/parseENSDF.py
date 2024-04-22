@@ -130,10 +130,11 @@ def main(argv):
     A = int(argv[2])
     indir = './Data/Decays/'
     finName = indir + 'ensdf' + ele.capitalize() + str(A) + '.dat'
-
+    
     if(not os.path.isfile(finName)):
-        getENSDFdata.main(argv)
-
+        ensdf = getENSDFdata.URLLister()
+        ensdf.main(argv)
+           
     energies = []
     probs = []
     intensityScale = getIntensityScale(finName)
