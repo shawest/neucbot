@@ -132,7 +132,8 @@ def main(argv):
     finName = indir + 'ensdf' + ele.capitalize() + str(A) + '.dat'
 
     if(not os.path.isfile(finName)):
-        getENSDFdata.main(argv)
+        ensdf = getENSDFdata.URLLister()
+        ensdf.main(argv)
 
     energies = []
     probs = []

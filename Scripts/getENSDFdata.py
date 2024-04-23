@@ -52,8 +52,8 @@ class URLLister:
         dau_Z = Z - 2
         dau_ele = chemistry.getElement(dau_Z)
 
-        nndc_url = 'https://www.nndc.bnl.gov/nudat2/decaysearchdirect.jsp?nuc=' + str(A) + ele.upper() + '&unc=nds'
-        nndc_page = urllib.request.urlopen(nndc_url, timeout=3)
+        nndc_url = 'https://www.nndc.bnl.gov/nudat3/decaysearchdirect.jsp?nuc=' + str(A) + ele.upper() + '&unc=nds'
+        nndc_page = urllib.request.urlopen(nndc_url, timeout=20)
         soup = BeautifulSoup(nndc_page, 'html.parser')
         url_ends = []
 
@@ -64,13 +64,13 @@ class URLLister:
 
         for url_end in url_ends:        
             # url = 'https://www.nndc.bnl.gov/chart/' + url_end
-            url = 'https://www.nndc.bnl.gov/nudat2/' + url_end
+            url = 'https://www.nndc.bnl.gov/nudat3/' + url_end
 
             print('Retrieving ENSDF data from:\t', url)
             req = Request(url)
             page = ''
             try:
-                page = urllib.request.urlopen(req, timeout=3)
+                page = urllib.request.urlopen(req, timeout=20)
             except (socket.timeout, urllib.error.URLError):
                 print("ERROR: TIMEOUT")
                 print(url)
