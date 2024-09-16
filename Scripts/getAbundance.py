@@ -11,12 +11,12 @@ def findAbundance(iso):
     for words in tokens:
         for word in words:
             if word == iso:
-                return filter(None,words)[2]
+                return list(filter(None,words))[2]
 
 def main(argv):
     iso = sys.argv[1]
     abundance = findAbundance(iso)
-    print abundance
+    print(abundance)
     return abundance
 
 if __name__ == '__main__' :

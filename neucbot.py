@@ -91,7 +91,7 @@ def loadChainAlphaList(fname):
     tokens = map(lambda line: line.split(), f.readlines())
     alpha_list = []
     for line in tokens:
-        if len(line) < 2 or line[0][0] == '#':
+        if len(list(line)) < 2 or line[0][0] == '#':
             continue
         # Read isotope and its branching ratio from file
         iso = line[0]
@@ -112,7 +112,7 @@ def readTargetMaterial(fname):
     mat_comp = []
     tokens = map(lambda line: line.split(), f.readlines())
     for line in tokens:
-        if len(line) < 3:
+        if len(list(line)) < 3:
             continue
         if line[0][0] == '#':
             continue
@@ -285,7 +285,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
     spec = {}
     tokens = map(lambda line: line.split(), f.readlines())
     for line in tokens:
-        if len(line) < 1 or line[0] == 'EMPTY':
+        if len(list(line)) < 1 or line[0] == 'EMPTY':
             break
         if line[0][0] == '#':
             continue
@@ -365,7 +365,7 @@ def readTotalNXsect(e_a,ele,A):
         print("Could not find file ", fname, file = constants.ofile)
         return 0
     f = open(fname)
-    lines = map(lambda line: line.split(), f.readlines())
+    lines = list(map(lambda line: line.split(), f.readlines()))
     xsect_line  = 0
     for line in lines:
         if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
@@ -374,12 +374,15 @@ def readTotalNXsect(e_a,ele,A):
             xsect_line += 1
     
     xsect_line += 3
-    if len(lines) < xsect_line:
+    #print("Lines: ", len(list(lines)), " xsect_line = ", xsect_line)
+
+    if len(list(lines))==0 or  len(list(lines)) < xsect_line:
         return 0
-    if lines[xsect_line][0] != 'neutron':
+    if list(lines)[xsect_line][0] != 'neutron':
         return 0
     sigma = float(lines[xsect_line][2])
     sigma *= constants.mb_to_cm2
+    #print("sigma = " , sigma)
     return sigma
 
 def condense_alpha_list(alpha_list,alpha_step_size):
@@ -485,6 +488,7 @@ def main():
             constants.run_talys = True
         if arg == '-d':
             constants.download_data = True
+            print("Option set: Download data")
             constants.download_version = 2
             version_choice = sys.argv[sys.argv.index(arg)+1]
             if (not version_choice[0] == '-') and (version_choice[0].lower() == 'v'):

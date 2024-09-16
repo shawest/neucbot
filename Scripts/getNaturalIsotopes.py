@@ -19,7 +19,7 @@ def findIsotopes(ele):
 
 def main(argv):
     ele = argv[1]
-    print findIsotopes(ele)
+    print(findIsotopes(ele))
 
 if __name__ == '__main__':
     main(sys.argv)
