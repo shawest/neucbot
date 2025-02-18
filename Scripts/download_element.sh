@@ -3,6 +3,7 @@
 #
 # This script downloads elements for the V2 dataset, generated with TALYS-1.95
 #
+# Usage: ./download_element.sh <element>
 
 inp=$1
 _ele=${inp%%[0-9]*}
