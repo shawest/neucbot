@@ -2,20 +2,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import division
-from past.utils import old_div  # pip install future
+from past.utils import old_div  # type: ignore # pip install future
 import sys
 import os
 sys.path.insert(0, './Scripts/')    # vscode suggests better solution via adding './Scripts' to extraPass
-import re
 import subprocess
 import shutil
-import math
-import parseENSDF as ensdf  # pip install sgmllib3k
-import getNaturalIsotopes as gni
-import getAbundance as isoabund
-import chemistry
-import matplotlib.pyplot as plt
-import numpy as np
+import parseENSDF as ensdf  # type: ignore # pip install sgmllib3k
+import getNaturalIsotopes as gni    # type: ignore 
+import getAbundance as isoabund # type: ignore 
+import matplotlib.pyplot as plt # type: ignore 
 
 class constants:
     N_A = 6.0221409e+23
