@@ -299,17 +299,16 @@ def getMatTerm(mat, mat_comp):  # return N_A * C_m / A_m
     return mat_term
 
 
-def getIsotopeDifferentialNSpecJENDL(e_a, ele, A, MT):
-    
-    dirname = isoDir(ele, A) + 'JendlOut'
-    fname = dirname + '/MT' +str(MT)+ '/cross-section' 
+def getIsotopeDifferentialNSpecJENDL(e_a, ele, A, MT):  # return spec {energy [keV] : sigma [cm^2/MeV]}  
+    # isoDir = './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    # example: isoDir = './Data/Isotopes/C/C13/'
+    path = isoDir(ele, A) + 'JendlOut/MT' + str(MT) + '/'
+    fname = path + 'outputE' + str("{:.4f}".format(e_a))
 
     spec = {}
 
     if not os.path.exists(fname):
-        f = open(fname, 'w')
-        f.write('EMPTY') 
-        f.close() 
+        print("NO JENDL file. e_a, ele, A, MT:", e_a, ele, A, MT)
 
     f = open(fname) 
 
@@ -325,15 +324,15 @@ def getIsotopeDifferentialNSpecJENDL(e_a, ele, A, MT):
 
         energy = int(float(line[0])*constants.MeV_to_keV)   # in keV
         sigma = float(line[1]) * constants.mb_to_cm2 / constants.MeV_to_keV
-        spec[(MT, energy)] = sigma 
-        spec[(4,  energy)]+= sigma 
+        spec[energy] = sigma 
     f.close()
-    return spec
+    return spec # cm^2/MeV
 
 
-def getIsotopeDifferentialNSpec(e_a, ele, A):
+def getIsotopeDifferentialNSpec(e_a, ele, A):   # return spec {energy [keV] : sigma [cm^2/MeV]}  
     target = ele+str(int(A))
     # isoDir = './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+    # example: isoDir = './Data/Isotopes/C/C13/'
     path = isoDir(ele, A) + 'NSpectra/'
     if not os.path.exists(path):
         os.makedirs(path)
@@ -386,8 +385,9 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         # line[5] = Compound
         # line[6] = Pre-eq ratio
 
-        # convert from mb/MeV to cm^2/MeV
+        # convert from MeV to keV
         energy = int(float(line[0])*constants.MeV_to_keV)
+        # convert from mb/MeV to cm^2/MeV
         sigma = old_div(float(line[1])*constants.mb_to_cm2, constants.MeV_to_keV)    # Divide by 10^30
         spec[energy] = sigma 
     return spec # cm^2/MeV
@@ -461,17 +461,17 @@ def readTotalNXsectJENDL(e_a, ele, A, MT): # return JENDL XS of (a,n) reaction i
     f = open(fname) 
     lines = [line.split() for line in f.readlines()] 
     sigma = 0
-    for line in lines:
+    for line in lines:  # This two 'if's make JENDL-powered neucbot much slower!!!
         if (line[0] != '#'):
-            # There is a sign '>=' here because the jendl files are in ascending order of energy. 
-            # (talys files are in descending order, so there is a '<=' sign).
             if e_a >= float(line[0]):   
                 sigma = float(line[1])*constants.mb_to_cm2
-    return sigma    # cm2
+                # break
+    f.close()
+    return sigma    # XS in cm2
 
 
 def readTotalNXsect(e_a, ele, A): # return TALYS XS of (a,n) reaction in cm2
-
+    
     fname = isoDir(ele, A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
     if not os.path.exists(fname):
         print('Could not find file', fname, file=constants.ofile)
@@ -491,9 +491,8 @@ def readTotalNXsect(e_a, ele, A): # return TALYS XS of (a,n) reaction in cm2
     if lines[xsect_line][0] != 'neutron':
         return 0
     sigma = float(lines[xsect_line][2])  # (a,n) XS in mb (= 10^-27 cm2)
-
     sigma *= constants.mb_to_cm2    
-
+    f.close()
     return sigma    # XS in cm2
 
 
@@ -501,7 +500,7 @@ def condense_alpha_list(alpha_list, alpha_step_size):
     # alpha_list - list of alpha particles with probability of each in decay chain.
     alpha_ene_cdf = []  # cdf - cumulative distribution function
     max_alpha = max(alpha_list)
-    e_a_max = int(max_alpha[0]*100 + 0.5)/100.  # Rounds up the energy. May be done via 'floor()'
+    e_a_max = int(max_alpha[0]*100 + 0.5)/100.  # Rounds up the energy. Could be done via 'floor()'
     alpha_ene_cdf.append([e_a_max, max_alpha[1]])
     e_a = e_a_max
     while e_a > 0:  # Summ up all the probabilities of alpha particles with energy less than e_a.
@@ -523,7 +522,9 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     binsize = 0.1   # Bin size for output spectrum, MeV
 
     spec_tot = {} 
-    xsects = {} 
+    xsects = {}
+    # partial_spec_tot = []   # for TALYS partail code MT = 4 
+    # partial_xsects = []     # for TALYS partail code MT = 4
     total_xsect = 0 
     counter = 0 
 
@@ -550,41 +551,67 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                 delta_ea = e_a
             # Part of formulae that is inside the integral.
             prefactors = old_div((intensity/100.) * mat_term * delta_ea, stopping_power)
-            
             if not os.path.exists(isoDir(mat.ele, mat.A) + 'JendlOut'): 
-                print('No such Jendl file: ', mat) 
+                # print('No such Jendl file: ', mat.ele, mat.A) 
                 mat.basename = 't'
 
             if (mat.basename == 'j'): 
-                dirname = isoDir(mat.ele, mat.A) + 'JendlOut' 
-                dirLen = len([name for name in os.listdir(dirname)])
-                for MT in range(dirLen-1): 
-                    partial_xsects = {} 
-                    partial_spec_tot = {} 
-                    MT += 50 
-                    partial_spec_raw = getIsotopeDifferentialNSpecJENDL(e_a, mat.ele, mat.A, MT) 
-                    partial_spec = rebin(partial_spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin) 
-                    partial_xsect = prefactors * readTotalNXsectJENDL(e_a, mat.ele, mat.A, mat.basename, MT) # cm^2 
-                        
-                    partial_total_xsect += partial_xsect 
-                    matname = str(mat.ele)+str(int(mat.A)) 
-                    if matname in xsects: 
-                        partial_xsects[matname]+= partial_xsect 
-                    else:
-                        partial_xsects[matname] = partial_xsect
+                
+                # ====start==== MT = 4 ====start==== #
+                
+                # Get raw spec {energy [keV] : sigma [cm^2/MeV]}  
+                spec_raw = getIsotopeDifferentialNSpecJENDL(e_a, mat.ele, mat.A, MT=4)
+                # Rebin raw spec 
+                spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin) 
+                # Multiply prefactors[?] by XS[cm^2]
+                xsect = prefactors * readTotalNXsectJENDL(e_a, mat.ele, mat.A, MT=4)
+                total_xsect += xsect    # total - for material. xsect stands for each particular nuclide.
+                matname = str(mat.ele)+str(int(mat.A)) 
+                if matname in xsects: 
+                    xsects[matname] += xsect 
+                else:
+                    xsects[matname] = xsect
+                # xsects = {C13 : xsect}
 
-                    for e in partial_spec:
-                        val = prefactors * partial_spec[e]
-                        if e in partial_spec_tot:
-                            partial_spec_tot[e] += val
-                        else:
-                            partial_spec_tot[e] = val
-                    
+                for e in spec:
+                    val = prefactors * spec[e]
+                    if e in spec_tot:
+                        spec_tot[e] += val
+                    else:
+                        spec_tot[e] = val
+                
+                # =====end===== MT = 4 =====end===== #
+                                        
+                # dirname = isoDir(mat.ele, mat.A) + 'JendlOut' 
+                # dirLen = len([name for name in os.listdir(dirname)])
+                # for MT in range(dirLen-1): 
+                #     partial_xsects = {} 
+                #     partial_spec_tot = {} 
+                #     MT += 50 
+                #     partial_spec_raw = getIsotopeDifferentialNSpecJENDL(e_a, mat.ele, mat.A, MT) 
+                #     partial_spec = rebin(partial_spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin) 
+                #     partial_xsect = prefactors * readTotalNXsectJENDL(e_a, mat.ele, mat.A, mat.basename, MT) # cm^2 
+                        
+                #     partial_total_xsect += partial_xsect 
+                #     matname = str(mat.ele)+str(int(mat.A)) 
+                #     if matname in partial_xsects: 
+                #         partial_xsects[matname]+= partial_xsect 
+                #     else:
+                #         partial_xsects[matname] = partial_xsect
+
+                #     for e in partial_spec:
+                #         val = prefactors * partial_spec[e]
+                #         if e in partial_spec_tot:
+                #             partial_spec_tot[e] += val
+                #         else:
+                #             partial_spec_tot[e] = val
+                
 
             if (mat.basename == 't'): 
+                
                 spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A) 
                 spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin) 
-                xsect = prefactors * readTotalNXsect(e_a, mat.ele, mat.A, mat.basename) # cm^2 
+                xsect = prefactors * readTotalNXsect(e_a, mat.ele, mat.A) # cm^2 
 
                 total_xsect += xsect 
                 matname = str(mat.ele)+str(int(mat.A)) 
