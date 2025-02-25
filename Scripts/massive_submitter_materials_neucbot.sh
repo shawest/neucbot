@@ -965,6 +965,20 @@ python3 ./neucbot.py -m Materials/SiO2 -c Chains/U238middleChain_SaG4n.dat -o Si
 
 #=======================================================================
 
+# download data
+# ./Scripts/download_element.sh Al
+# ./Scripts/download_element.sh B
+# ./Scripts/download_element.sh Be
+# ./Scripts/download_element.sh C
+# ./Scripts/download_element.sh F
+# ./Scripts/download_element.sh H
+# ./Scripts/download_element.sh Li
+# ./Scripts/download_element.sh N
+# ./Scripts/download_element.sh Na
+# ./Scripts/download_element.sh O
+# ./Scripts/download_element.sh Si
+
+
 echo "Done!"
 
 # Version 1.90. 30.06.2022
