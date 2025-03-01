@@ -1,19 +1,24 @@
 #!/bin/bash
 
 #
-# This script downloads all elements for the JENDL dataset
+# This script downloads elements from the JENDL-5 dataset
 #
+# Usage: bash ./Scripts/download_lendl_data.sh <element>
 
+inp=$1
+_ele=${inp%%[0-9]*}
+ele=`echo ${_ele} | tr '[:upper:]' '[:lower:]'`
+ELE=`echo ${_ele} | tr '[:lower:]' '[:upper:]'`
+Ele=${ELE:0:1}${ele:1:10}
 dir=$PWD
 cd ./Data/Isotopes/
-git clone https://github.com/iv-gonch/jendl_data
-tar -xvzf ./jendl_data/B.tar.gz
-tar -xvzf ./jendl_data/Be.tar.gz
-tar -xvzf ./jendl_data/C.tar.gz
-tar -xvzf ./jendl_data/F.tar.bz2
-tar -xvzf ./jendl_data/Li.tar.gz
-tar -xvzf ./jendl_data/N.tar.gz
-tar -xvzf ./jendl_data/Na.tar.bz2
-tar -xvzf ./jendl_data/O.tar.bz2
-rm -rf jendl_data
+git clone https://github.com/neucbot-datasets/${Ele}_JENDL-5.git 
+
+if [[ "$Ele" == "O" || "$Ele" == "F" || "$Ele" == "Na" ]]; then
+    tar -xvjf ./${Ele}_JENDL-5/${Ele}.tar.bz2
+else
+    tar -xvzf ./${Ele}_JENDL-5/${Ele}.tar.gz
+fi
+
+rm -rf ${Ele}_JENDL-5
 cd $dir
