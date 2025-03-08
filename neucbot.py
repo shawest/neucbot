@@ -740,12 +740,16 @@ def main():
                 with open(r'./Data/routes.txt', 'r') as file:
                     if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
                         if constants.download_version == 2:
-                            print('\tDownloading (datset V2) data for', ele, file=sys.stdout)
+                            print('\tDownloading (TALYS-1.95) data for', ele, file=sys.stdout)
                             bashcmd = './Scripts/download_element.sh ' + ele
                             process = subprocess.call(bashcmd, shell=True)
                         elif constants.download_version == 1:
-                            print('\tDownloading (dataset V1) data for', ele, file=sys.stdout)
+                            print('\tDownloading (TALYS-1.6) data for', ele, file=sys.stdout)
                             bashcmd = './Scripts/download_element_v1.sh ' + ele
+                            process = subprocess.call(bashcmd, shell=True)
+                        elif constants.download_version == "j":
+                            print('\tDownloading (TALYS-1.6) data for', ele, file=sys.stdout)
+                            bashcmd = './Scripts/download_jendl_data.sh ' + ele
                             process = subprocess.call(bashcmd, shell=True)
             else:
                 with open(r'./Data/routes.txt', 'r') as file:
