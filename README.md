@@ -28,7 +28,7 @@ github: https://github.com/shawest/neucbot
 
 ----------------------------------------------------------
 ----------------------------------------------------------
-## 1) <a id="about">About NeuCBOT</a>
+## 1. <a id="about">About NeuCBOT</a>
 ### i. <a id="general">General</a>
 
 NeuCBOT is a tool for calculating ($\alpha$,n) yields and 
@@ -142,7 +142,7 @@ For questions or comments, feel free to send me an email.
 
 ----------------------------------------------------------
 ----------------------------------------------------------
-## 2) <a id="setup">Setup</a>
+## 2. <a id="setup">Setup</a>
 ### i. <a id="accessing-the-code">Accessing the code</a>
 
 The code for NeuCBOT is stored in 
@@ -237,7 +237,7 @@ The TALYS software can be downloaded from the homepage at
 
 ----------------------------------------------------------
 ----------------------------------------------------------
-## 3) <a id="usage">Usage</a>
+## 3. <a id="usage">Usage</a>
 ### i. <a id="basics">The Basics</a>
 
 NeuCBOT can be run from the command line of any unix-based
@@ -412,7 +412,7 @@ are skipped by NeuCBOT.
 
 ----------------------------------------------------------
 ----------------------------------------------------------
-## 4) <a id="output">Output</a>
+## 4. <a id="output">Output</a>
 The output of NeuCBOT is hopefully mostly straightforward to 
 understand. 
 
@@ -451,7 +451,7 @@ given in units of $\ \cfrac{\text{neutron}}{\text{decay} \cdot 100\ \text{keV}}\
 
 ----------------------------------------------------------
 ----------------------------------------------------------
-## 5) <a id="citations">Citations</a>
+## 5. <a id="citations">Citations</a>
 0. <a id="1">A. Koning, et al. TALYS-1.6. http://www.talys.eu/</a>
 1. <a id="2">J. Ziegler, et al. SRIM-2008. http://www.srim.org/</a>
 2. <a id="3">J. K. Tuli, et al. Evaluated Nuclear Structure Data File (ENSDF), 1996.</a>
