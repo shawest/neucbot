@@ -32,7 +32,7 @@ github: https://github.com/shawest/neucbot
 ### i. <a id="general">General</a>
 
 NeuCBOT is a tool for calculating ($\alpha$,n) yields and 
-neutron energy spectra for arbitrary materials under alpha
+neutron spectra for arbitrary materials under alpha
 exposure for arbitrary lists of alpha energies or in the
 presence of alpha-emitting contaminants.
 
@@ -94,8 +94,8 @@ subdirectory for each element, and a subdirectory within
 this subdirectory for each isotope of that element.
 
 Within an isotope's directory, there is a direcotry called
-NSpectra/ which contains outgoing neutron energy spectra
-for alpha particles of a given energy undergoing the 
+NSpectra/ which contains outgoing neutron spectra for 
+alpha particles of a given energy undergoing the 
 ($\alpha$,n) reaction on this isotope. 
 
 The TalysOut/ direcotry contains the output from TALYS,
