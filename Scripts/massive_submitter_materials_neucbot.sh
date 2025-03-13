@@ -978,6 +978,15 @@ python3 ./neucbot.py -m Materials/SiO2 -c Chains/U238middleChain_SaG4n.dat -o Si
 # ./Scripts/download_element.sh O
 # ./Scripts/download_element.sh Si
 
+# bash Scripts/download_jendl_data.sh Li
+# bash Scripts/download_jendl_data.sh Be
+# bash Scripts/download_jendl_data.sh B
+# bash Scripts/download_jendl_data.sh C
+# bash Scripts/download_jendl_data.sh N
+# bash Scripts/download_jendl_data.sh O
+# bash Scripts/download_jendl_data.sh F
+# bash Scripts/download_jendl_data.sh Na
+
 
 echo "Done!"
 

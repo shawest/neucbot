@@ -22,3 +22,13 @@ fi
 
 rm -rf ${Ele}_JENDL-5
 cd $dir
+
+# List of JENDL elemets:
+# bash Scripts/download_jendl_data.sh Li
+# bash Scripts/download_jendl_data.sh Be
+# bash Scripts/download_jendl_data.sh B 
+# bash Scripts/download_jendl_data.sh C 
+# bash Scripts/download_jendl_data.sh N 
+# bash Scripts/download_jendl_data.sh O 
+# bash Scripts/download_jendl_data.sh F 
+# bash Scripts/download_jendl_data.sh Na

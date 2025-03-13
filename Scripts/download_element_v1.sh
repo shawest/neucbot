@@ -4,6 +4,7 @@
 # This script downloads elements for the V1 dataset, generated with TALYS-1.6
 #
 
+
 inp=$1
 _ele=${inp%%[0-9]*}
 ele=`echo ${_ele} | tr '[:upper:]' '[:lower:]'`

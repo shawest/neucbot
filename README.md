@@ -113,7 +113,6 @@ which contains folders named /MT␣/. This naming is taken from
 the ENDF6 format and is used to determine the reaction type.
 JENDL dataset provides information on the partial reactions, 
 where 
-
 * MT50 stands for (&alpha;,n<sub>0</sub>) of reaction with the 
 residual nucleus in ground state
 * MT51 stands for (&alpha;,т<sub>1</sub>) of reaction with the 
@@ -138,7 +137,12 @@ alpha and by neutron energies cross section files called
 /outputE␣, for each alpha energy. It is used for calculating
 neutron spectrum.
 
-For questions or comments, feel free to send me an email.
+JENDL doesn't contain data suitable for NeuCBOT, so JENDL 
+data was translated to required type using side github 
+project called [JENDL5-to-NeuCBOT](https://github.com/iv-gonch/JENDL5-to-NeuCBOT). This project was done by Ivan Goncharenko,
+e-mail: iv.gonch.0907@gmail.com.
+
+For questions or comments, feel free to send an email.
 
 ----------------------------------------------------------
 ----------------------------------------------------------
@@ -266,7 +270,10 @@ a description of what that option does in parentheses.
 * --print-alphas-only \[<i>no arguments</i>\] (same as --print-alphas, but aborts after printing)
 * --force-recalculation \[<i>no arguments</i>\] (if TALYS is installed in your machine, run it for each alpha energy and each isotope, overwriting pre-existing entries in the database if necessary)
 
-In order to run NeuCBOT, the user must provide a material description (-m material_file_name) and either an alpha energy list (-l alpha_list_name) OR a list of contaminants in your decay chain of interest (-c contaminants_list_name).
+In order to run NeuCBOT, the user must provide a material 
+description (-m material_file_name) and either an alpha 
+energy list (-l alpha_list_name) OR a list of contaminants 
+in your decay chain of interest (-c contaminants_list_name).
 
 All other options are optional. 
 
@@ -278,6 +285,13 @@ TALYS/JENDL databases can be select by adding letter "t" or
 "j" (accordingly) both in uppercase and lowercase.
 If database is not selected or there is no JENDL data, the 
 calculations will use data from TALYS.
+
+JENDL database provides conducting calculations for partial 
+reactions. For now running such calculations is in development 
+and not user friendly: you should manually change arguments 
+MT=4 in function ```getIsotopeDifferentialNSpecJENDL()``` on 
+the 563th line and in function ```readTotalNXsectJENDL()``` 
+on the 567th line to MT=50/51/etc.
 
 NeuCBOT comes with acrylic as an example material, stored in ./
 Materials/Acrylic.dat. 
