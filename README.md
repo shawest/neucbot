@@ -17,13 +17,13 @@ github: https://github.com/shawest/neucbot
   - iii [Directory Structure](#directory-structure)
 2. [Setup](#setup)
   - i [Accessing the code](#accessing-the-code)
-  - ii [Accessing ($\alpha$,n) reaction databases](#accessing-alphan-reaction-databases)
+  - ii [Accessing (&alpha;,n) reaction databases](#accessing-alphan-reaction-databases)
 3. [Usage](#usage)
   - i [The Basics](#basics)
   - ii [Material Composition Files](#material-composition)
   - iii [Isotope List Files](#isotope-lists)
   - iv [Alpha List Files](#alpha-lists)
-4. [Output](#Output)
+4. [Output](#output)
 5. [Citations](#citations)
 
 ----------------------------------------------------------
@@ -31,7 +31,7 @@ github: https://github.com/shawest/neucbot
 ## 1. <a id="about">About NeuCBOT</a>
 ### i. <a id="general">General</a>
 
-NeuCBOT is a tool for calculating ($\alpha$,n) yields and 
+NeuCBOT is a tool for calculating (&alpha;,n) yields and 
 neutron spectra for arbitrary materials under alpha
 exposure for arbitrary lists of alpha energies or in the
 presence of alpha-emitting contaminants.
@@ -87,7 +87,7 @@ directory there are the following subdirectories:
 * ./Data/StopingPowers/ : SRIM-generated stopping powers for each element
 * ./Data/Decays/        : Downloaded ENSDF files with alpha decay data for given isotopes
 * ./Data/abundances.dat : Natural abundances of every isotope, from [\[4\]](#4)
-* ./Data/Isotopes/      : ($\alpha$,n) reaction data library
+* ./Data/Isotopes/      : (&alpha;,n) reaction data library
 
 Within the ./Data/Isotopes/ directory, there is a 
 subdirectory for each element, and a subdirectory within 
@@ -96,17 +96,17 @@ this subdirectory for each isotope of that element.
 Within an isotope's directory, there is a direcotry called
 NSpectra/ which contains outgoing neutron spectra for 
 alpha particles of a given energy undergoing the 
-($\alpha$,n) reaction on this isotope. 
+(&alpha;,n) reaction on this isotope. 
 
 The TalysOut/ direcotry contains the output from TALYS,
 from each simulated alpha particle at a given energy upon the
 isotope. Files in this directory include cross sections for
 the various alpha-induced nuclear reactions that may occur,
-including the ($\alpha$,n) reaction, as well as cross sections
+including the (&alpha;,n) reaction, as well as cross sections
 for producing various excited nuclei and gammas at various
 energies. These files may be of particular interest to people
 wishing to explore gammas that may be correlated with 
-($\alpha$,n) neutrons.
+(&alpha;,n) neutrons.
 
 Data obtained from JENDL is stored in the JendlOut/ direcotry, 
 which contains folders named /MT␣/. This naming is taken from 
@@ -114,17 +114,17 @@ the ENDF6 format and is used to determine the reaction type.
 JENDL dataset provides information on the partial reactions, 
 where 
 
-* MT50 stands for ($\alpha$,$\text{n}_0$) of reaction with the 
+* MT50 stands for (&alpha;,n<sub>0</sub>) of reaction with the 
 residual nucleus in ground state
-* MT51 stands for ($\alpha$,$\text{n}_1$) of reaction with the 
+* MT51 stands for (&alpha;,т<sub>1</sub>) of reaction with the 
 residual nucleus in the $1^{\text{st}}$ exited state
 
 &emsp;&emsp;&emsp; $\cdot \cdot \cdot$
 
-* MT[50+X] stands for ($\alpha$,$\text{n}_X$) of reaction with 
+* MT[50+X] stands for (&alpha;,n<sub>X</sub>) of reaction with 
 the residual nucleus in the $\text{X}^{\text{st}}$ exited state
 
-* MT4 stands for ($\alpha$,n) reaction in general and exactly 
+* MT4 stands for (&alpha;,n) reaction in general and exactly 
 equal to a summ of all partial reactions 
 
 Each /MT␣/ directory contains differential by alpha energy 
@@ -160,9 +160,9 @@ git clone https://github.com/shawest/neucbot.git
 This will create a directory called neucbot in your current
 directory.
 
-### ii. <a id="accessing-alphan-reaction-databases">Accessing ($\alpha$,n) reaction databases</a>
+### ii. <a id="accessing-alphan-reaction-databases">Accessing (&alpha;,n) reaction databases</a>
 
-There are two options for obtaining ($\alpha$,n) reaction 
+There are two options for obtaining (&alpha;,n) reaction 
 databases.
 
 Databases for all naturally occurring isotopes ranging from
@@ -227,7 +227,7 @@ NeuCBOT with the -t option. Doing so will save input files
 in a directory called TalysInput, in the isotope's database
 directory.
 
-This option allows you to calculate ($\alpha$,n) yields and
+This option allows you to calculate (&alpha;,n) yields and
 spectra for isotopes and alpha energies not included in
 this database, though it should be noted that this will 
 typically slow down the code.
@@ -260,7 +260,7 @@ a description of what that option does in parentheses.
 * -m \[material composition file name] (file with a description of the material composition)
 * -s \[alpha step size in MeV\] (the step size to be used when integrating over the alpha energy, minimum of 0.01)
 * -t \[<i>no arguments</i>\] (tells NeuCBOT to run TALYS for reactions not in libraries)
-* -d \[<i>no arguments</i>\] (if an element is missing from the ($\alpha$,n) database, automatically run the download_element.sh script to download the element's database)
+* -d \[<i>no arguments</i>\] (if an element is missing from the (&alpha;,n) database, automatically run the download_element.sh script to download the element's database)
 * -o \[output file name\] (name of text file to store output to)
 * --print-alphas \[<i>no arguments</i>\] (prints a list of alpha energies being used)
 * --print-alphas-only \[<i>no arguments</i>\] (same as --print-alphas, but aborts after printing)
@@ -305,7 +305,7 @@ It should be noted that the order of these options does not
 matter.
 
 If any isotopes listed in the material composition description 
-are not present in the ($\alpha$,n) reaction library, NeuCBOT 
+are not present in the (&alpha;,n) reaction library, NeuCBOT 
 will throw an error.
 
 ### ii. <a id="material-composition">Material Composition Files</a>
@@ -419,15 +419,15 @@ understand.
 As NeuCBOT runs, it prints the alpha energy every 10 keV, so 
 its progress can be tracked. It will also output any relevant 
 warnings it may encounter while running. The most likely 
-warnings will be missing isotopic data in the ($\alpha$,n) 
+warnings will be missing isotopic data in the (&alpha;,n) 
 database. If the alpha energies simulated are all under 10 MeV 
 and only naturally occuring isotopes are being simulated, the 
 simplest solution is to run NeuCBOT with the -d option, an it 
-will acquire ($\alpha$,n) data automatically. Otherwise, the 
+will acquire (&alpha;,n) data automatically. Otherwise, the 
 user should install TALYS and run with the -t option.
 
 The output provides the total neutron yield, calculated by 
-integrating all of ($\alpha$,n) cross sections over the tracks 
+integrating all of (&alpha;,n) cross sections over the tracks 
 of the alphas as they slow down. The units used here are the 
 number of neutrons produced per decay of the entire decay 
 chain or list of alpha energies being simulated. So if a chain 
