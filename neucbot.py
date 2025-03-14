@@ -13,6 +13,17 @@ import getNaturalIsotopes as gni    # type: ignore
 import getAbundance as isoabund # type: ignore 
 import matplotlib.pyplot as plt # type: ignore 
 
+import sys
+import os
+import re
+import subprocess
+import shutil
+import math
+from Scripts import getNaturalIsotopes as gni
+from Scripts import parseENSDF as ensdf
+from Scripts import getAbundance as isoabund
+
+
 class constants:
     N_A = 6.0221409e+23
     MeV_to_keV = 1.e3
@@ -24,6 +35,7 @@ class constants:
     run_talys = False
     run_alphas = True
     print_alphas = False
+    calculate_energy_loss = False
     download_data = False
     download_version = 2
     force_recalculation = False
@@ -36,9 +48,18 @@ class material:
         self.A = float(a)
         self.frac = float(f)
         self.basename = str(b)
+        self.num_density = constants.N_A*float(f)*1/float(a)
 
     def get_list(self):
         return [self.ele, self.A, self.frac, self.basename]
+    
+    def __str__(self):
+        # This method defines the string representation of the object.
+        return f"(name={self.ele}, A={self.A}, f={self.frac})"
+    
+    def __repr__(self):
+        # This method is used for debugging and developer-focused representation.
+        return f"({self.ele!r}, {self.A!r}, {self.frac!r})"
 
 
 def isoDir(ele, A): # example './Data/Isotopes/Be/Be9/'
@@ -120,6 +141,7 @@ def loadChainAlphaList(fname):  # returns list [E_alpha, Intesity] for each isot
     for line in tokens: 
         if len(line) < 2 or line[0][0] == '#': 
             continue 
+
         # Read isotope and its branching ratio from file
         iso = line[0]   # element + atomic mass
         br = float(line[1])  # Branching
@@ -128,10 +150,10 @@ def loadChainAlphaList(fname):  # returns list [E_alpha, Intesity] for each isot
         # Now get the isotope's alpha list and add it to the chain's list 
         aList_forIso = getAlphaListIfExists(ele, A) 
         if constants.print_alphas:
-            print(iso, file=constants.ofile) 
-            print('\t', aList_forIso, file=constants.ofile)
+            print(iso, file = constants.ofile) 
+            print('\t', aList_forIso, file = constants.ofile)
         for [ene, intensity] in aList_forIso:
-            alpha_list.append([ene, old_div(intensity*br, 100)])
+            alpha_list.append([ene, old_div(intensity*br, 100)])    #why multiply the branching ratio by intensity?
     return alpha_list
 
 
@@ -139,12 +161,14 @@ def readTargetMaterial(fname):
     f = open(fname) # example: fname = Materials/Acrylic.dat
     mat_comp = []
     tokens = [line.split() for line in f.readlines()]
+
     for line in tokens:  
         # File contains a table of four columns: 
         # element name,
         # atomic mass number, 
         # the percentage of mass of the element in the material,
         # data base name: j - JENDL; t - TALYS.
+
         if len(line) < 3:
             continue
         if line[0][0] == '#':
@@ -173,7 +197,7 @@ def readTargetMaterial(fname):
     norm = 0
     for mat in mat_comp:
         norm += mat.frac
-    for mat in mat_comp:
+    for mat in mat_comp: #can condense into a single loop
         mat.frac /= norm
 
     return mat_comp
@@ -372,7 +396,9 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):   # return spec {energy [keV] : si
 
     spec = {}
     tokens = [line.split() for line in f.readlines()]
+
     for line in tokens:  # line stands for E_out
+
         if len(line) < 1 or line[0] == 'EMPTY':
             break
         if line[0][0] == '#':
@@ -478,9 +504,11 @@ def readTotalNXsect(e_a, ele, A): # return TALYS XS of (a,n) reaction in cm2
         return 0
     f = open(fname)
     lines = [line.split() for line in f.readlines()]
+
     xsect_line = 0
     for line in lines:  # Looking for particular line in file '.../TalysOut/outputE...'
         if line == ['2.', 'Binary', 'non-elastic', 'cross', 'sections', '(non-exclusive)']:
+
             break
         else:
             xsect_line += 1
@@ -500,10 +528,12 @@ def condense_alpha_list(alpha_list, alpha_step_size):
     # alpha_list - list of alpha particles with probability of each in decay chain.
     alpha_ene_cdf = []  # cdf - cumulative distribution function
     max_alpha = max(alpha_list)
+
     e_a_max = int(max_alpha[0]*100 + 0.5)/100.  # Rounds up the energy. Could be done via 'floor()'
     alpha_ene_cdf.append([e_a_max, max_alpha[1]])
     e_a = e_a_max
     while e_a > 0:  # Summ up all the probabilities of alpha particles with energy less than e_a.
+
         cum_int = 0
         for alpha in alpha_list:
             this_e_a = int(alpha[0]*100+0.5)/100.
@@ -512,6 +542,152 @@ def condense_alpha_list(alpha_list, alpha_step_size):
         alpha_ene_cdf.append([e_a, cum_int])
         e_a -= alpha_step_size
     return alpha_ene_cdf
+
+
+def calculate_num_steps(alpha_list,alpha_step_size):
+    total_steps = 0
+    for alpha in alpha_list:
+        this_e_a = int(alpha[0]*100 + .05)/100
+        total_steps += int((this_e_a/alpha_step_size)*100)/100
+    return total_steps
+
+
+def n_prob_spec(nspec, total):
+    prob_spec = {}
+    for e in nspec:
+        probability = (nspec[e]/total) * 100 * 100
+        prob_spec[e] = probability
+    return prob_spec
+
+
+def download_talys_data(mat_comp):
+    for mat in mat_comp:
+        ele = mat.ele
+        if not os.path.exists('UI/Data/Isotopes/'+ele.capitalize()):
+            if constants.download_version == 2:
+                print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
+                bashcmd = './UI/Scripts/download_element.sh ' + ele
+                process = subprocess.call(bashcmd,shell=True)
+            elif constants.download_version == 1:
+                print('\tDownloading (dataset V1) data for',ele, file = sys.stdout)
+                bashcmd = './UI/Scripts/download_element_v1.sh ' + ele
+                process = subprocess.call(bashcmd,shell=True)
+
+
+def run_alpha_energy_loss(alpha_list, mat_comp, e_alpha_step):
+    binsize = 0.1 # Bin size for output spectrum
+    spec_tot = {}
+    xsects = {}
+    total_xsect = 0
+    counter = 0
+    total_steps = (calculate_num_steps(alpha_list, e_alpha_step)*100+.5)/100
+    nprob_spectrum = {}
+    a_n_spec = {}
+    a_n_probspec = {}
+    a_n_probspec_norm = {}
+    a_n_mat_probspec = {}
+    #iterate through each alpha in the alpha list
+    
+    for [e_a, intensity] in alpha_list:
+        this_e_a = int(e_a*100+.5)/100
+
+        #iterate through entire alpha's energy
+        #delta_e_a = 0
+        while this_e_a > 0:
+            counter += 1
+
+            #loading bar
+            if counter % (int(total_steps/100)) == 0:
+                sys.stdout.write('\r')
+                sys.stdout.write("[%-100s] %d%%" % ('='*int(counter*100/total_steps), 100*counter/total_steps))
+                sys.stdout.flush()
+
+            #calculate stopping power for this alpha energy
+            stopping_power = calcStoppingPower(this_e_a, mat_comp)
+            
+            #iterate through each material for each change in energy
+            for mat in mat_comp:
+                #calculate total cross section at this energy
+                mat_term = getMatTerm(mat,mat_comp)
+                prefactors = (intensity/100.)*mat_term*e_alpha_step/stopping_power
+                xsect = prefactors*readTotalNXsect(this_e_a, mat.ele,mat.A)
+                total_xsect += xsect
+
+                #calculate neutron spectrum at this energy
+                spec_raw = getIsotopeDifferentialNSpec(this_e_a, mat.ele, mat.A)
+                spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin)
+                matname = str(mat.ele)+str(mat.A)
+
+                #calculate spectrum for each material
+                if matname in xsects:
+                    xsects[matname] += xsect
+                else:
+                    xsects[matname] = xsect
+
+                #calculate neutron yield for each each neutron energy
+                delta_e_a = round(e_a - this_e_a, 2)
+                for e in spec:
+                    val = prefactors * spec[e]
+                    if e in spec_tot:
+                        spec_tot[e] += val
+                        if (e,delta_e_a) in a_n_spec:
+                            a_n_spec[e,delta_e_a] += val
+                        else:
+                            a_n_spec[e,delta_e_a] = val
+                    else:
+                        spec_tot[e] = val
+                        a_n_spec[e,delta_e_a] = val
+
+                        
+
+            #energy step
+            this_e_a -= e_alpha_step
+
+    nspec_sum = integrate(spec_tot)
+    for e in spec_tot:
+        nprob_spectrum[e] = spec_tot[e]/nspec_sum
+
+    #calculate probabilities across entire (a,n) spectrum
+    for e, delta_e_a in a_n_spec:
+        if spec_tot[e] == 0:
+            continue
+        else:
+            a_n_probspec[e,delta_e_a] = a_n_spec[e,delta_e_a]/spec_tot[e]
+            a_n_probspec_norm[e,delta_e_a] = a_n_spec[e,delta_e_a]/nspec_sum
+    
+    #make discrete lists for (a,n) graphs for each neutron energy level
+    a_n_list = {}
+    for e in spec_tot:
+        a_n_graph = {}
+        for en, delta_e_a in a_n_spec:
+            if e == en and spec_tot[e] != 0:
+                a_n_graph[delta_e_a] = a_n_probspec[e,delta_e_a]/constants.delta_bin
+        a_n_list[e] = a_n_graph
+    
+    #calculate probabilities for each element
+    for e, delta_e_a in a_n_spec:
+        if spec_tot[e] == 0:
+            continue
+        else:
+            a_n_mat_probspec[e,delta_e_a] = a_n_spec[e,delta_e_a]/spec_tot[e]
+
+    #make discrete lists for (a,n) spectrum split into constituent elements
+    a_n_mat_list = {}
+    for e in spec_tot:
+        a_n_mat_graph = {}
+        for en, delta_e_a in a_n_spec:
+            if e == en and spec_tot[e] != 0:
+                a_n_mat_graph[delta_e_a] = a_n_mat_probspec[e,delta_e_a]
+        a_n_mat_list[e,mat] = a_n_mat_graph
+
+    #make a simple list of each alpha energy increment for later iteration in flask app
+    max_alpha = round(max(alpha_list)[0], 2)
+    max_alpha_list = []
+    while max_alpha >= 0:
+        max_alpha_list.append(max_alpha)
+        max_alpha = round(max_alpha - e_alpha_step, 2)
+        
+    return xsects, spec_tot, nprob_spectrum, a_n_probspec, max_alpha_list, a_n_list, a_n_probspec_norm
 
 
 def run_alpha(alpha_list, mat_comp, e_alpha_step):
@@ -635,14 +811,26 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
     
     # print out total spectrum
     newspec = spec_tot
-    print('', file=constants.ofile)
-    print('# Total neutron yield =', total_xsect, ' n/decay', file=constants.ofile)
-    for x in sorted(xsects):
-        print('\t', x, xsects[x], file=constants.ofile)
 
-    print('# Integral of spectrum =', integrate(newspec), ' n/decay', file=constants.ofile)
+    print('',file = constants.ofile)
+    print('# Total neutron yield = ', '{0:.2e}'.format(total_xsect), ' n/decay', file = constants.ofile)
+    for x in sorted(xsects):
+        print('\t',x,'{0:.2e}'.format(xsects[x]), file = constants.ofile)
+    print('# Integral of spectrum = ', '{0:.2e}'.format(integrate(newspec)), " n/decay", file = constants.ofile)
     for e in sorted(newspec):
-        print(e, newspec[e], file=constants.ofile)
+        formatted_e = str(e).rjust(6)  
+
+        max_length=10
+        formatted_spec = f"{newspec[e]:.{max_length}g}"
+        if len(formatted_spec) > max_length:
+            mantissa, exponent = formatted_spec.split('e')
+            mantissa_length = max_length - len(exponent) - 2
+            mantissa = mantissa[:mantissa_length]
+            
+            formatted_spec = f"{mantissa}e{exponent}"
+        print(f'{formatted_e}', formatted_spec, file = constants.ofile)
+        # print(f'{formatted_e}', '{0:.2e}'.format(newspec[e]), file = constants.ofile) # will always be 0 after a certain point?
+    return xsects,newspec
 
 
 def help_message():
@@ -698,11 +886,14 @@ def main():
         if arg == '-d':
             constants.download_data = True
             constants.download_version = 2
-            version_choice = sys.argv[sys.argv.index(arg)+1]
-            if (not version_choice[0] == '-') and (version_choice[0].lower() == 'v'):
-                version_num = int(version_choice[1])
-                constants.download_version = version_num
-                print('Downloading data from version', version_num)
+            if len(sys.argv) > sys.argv.index(arg)+1:
+                version_choice = sys.argv[sys.argv.index(arg)+1]
+                if (not version_choice[0] == '-') and (version_choice[0].lower() == 'v'):
+                    version_num = int(version_choice[1])
+                    constants.download_version = version_num
+                    print('Downloading data from version', version_num)
+        if arg == '-Ea':
+            constants.calculate_energy_loss = True
         if arg == '--print-alphas':
             constants.print_alphas = True
         if arg == '--print-alphas-only':
@@ -728,7 +919,7 @@ def main():
     if constants.print_alphas:
         print('Alpha List:', file=sys.stdout)
         print(max(alpha_list), file=sys.stdout)
-        condense_alpha_list(alpha_list, alpha_step_size)
+        condense_alpha_list(alpha_list, alpha_step_size)     # why call this function?
         for alph in alpha_list:
             print(alph[0], '&', alph[1], '\\\\', file=sys.stdout)
 
@@ -758,8 +949,12 @@ def main():
                         bashcmd = './Scripts/download_element_jendl.sh '
 
     if constants.run_alphas:
-        print('Running alphas:', file=sys.stdout)
-        run_alpha(alpha_list, mat_comp, alpha_step_size)
+        if constants.calculate_energy_loss:
+            print('Running alphas w/ energy loss:', file = sys.stdout)
+            run_alpha_energy_loss(alpha_list, mat_comp, alpha_step_size)
+        else:
+            print('Running alphas:', file = sys.stdout)
+            run_alpha(alpha_list, mat_comp, alpha_step_size)
         # alpha_list - list of alpha particles in decay chain
         # mat_comp - list of element name, atomic mass, mass fraction and database name.
 

@@ -12,7 +12,8 @@ def findAbundance(iso):
     for words in tokens:
         for word in words:
             if word == iso:
-                return [_f for _f in words if _f][2]  # ['a', '1', None, '4.4'] -> ['a', '1', '4.4']
+                return list(filter(None,words))[2]
+
 
 def main(argv):
     iso = sys.argv[1]

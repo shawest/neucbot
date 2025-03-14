@@ -147,6 +147,7 @@ def main(argv):
     fout = open(foutName,'w')
 
     for i in range(0,len(energies)):
+
 #        print 'E =',energies[i]/1000,'\tI =',probs[i]
         fout.write(str(old_div(energies[i],1000))+'\t'+str(probs[i])+'\n')
 #        fout.write('{}\t{}\n'.format(energies[i]/1000, probs[i]))
