@@ -1,10 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import division
-
-# pip install future
-from past.utils import old_div  # type: ignore 
 
 import sys
 import os
@@ -34,11 +29,11 @@ from Scripts import getAbundance as isoabund
 
 class constants:
     N_A = 6.0221409e+23
-    MeV_to_keV = 1.e3
+    MeV_to_keV = 1_000
     mb_to_cm2 = 1.e-27
-    year_to_s = 31536000
+    year_to_s = 31_536_000
     min_bin = 0     # keV
-    max_bin = 20000 # keV
+    max_bin = 20_000 # keV
     delta_bin = 100 # keV
     run_talys = False
     run_alphas = True
@@ -161,7 +156,7 @@ def loadChainAlphaList(fname):  # returns list [E_alpha, Intesity] for each isot
             print(iso, file = constants.ofile) 
             print('\t', aList_forIso, file = constants.ofile)
         for [ene, intensity] in aList_forIso:
-            alpha_list.append([ene, old_div(intensity*br, 100)])    #why multiply the branching ratio by intensity?
+            alpha_list.append([ene, intensity*br / 10])    #why multiply the branching ratio by intensity?
     return alpha_list
 
 
@@ -243,7 +238,7 @@ def calcStoppingPower(e_alpha_MeV, mat_comp):
                 continue
             e_curr = float(line[0])
             if str(line[1]) == 'keV':
-                e_curr /= 1000
+                e_curr /= 1_000
             elif str(line[1]) == 'MeV':
                 e_curr *= 1
             sp_curr = float(line[3])+float(line[2])
@@ -258,8 +253,7 @@ def calcStoppingPower(e_alpha_MeV, mat_comp):
             # entry and the previous one
             if e_curr > e_alpha:
                 first = False
-                sp_alpha = old_div((sp_curr-sp_last) *
-                                   (e_alpha-e_last), (e_curr-e_last)) + sp_last
+                sp_alpha = (sp_curr-sp_last) * (e_alpha-e_last) / (e_curr-e_last) + sp_last
                 sp_found = True
                 break
             # Otherwise, keep looking for the entry
@@ -269,7 +263,7 @@ def calcStoppingPower(e_alpha_MeV, mat_comp):
         # if the alpha energy is too high for the list, use the highest energy on the list
         if not sp_found:
             sp_alpha = sp_last
-        sp_total += old_div(sp_alpha * mat_comp_reduced[mat], 100)
+        sp_total += sp_alpha * mat_comp_reduced[mat] / 100
     return sp_total
 
 
@@ -327,7 +321,7 @@ def getMatTerm(mat, mat_comp):  # return N_A * C_m / A_m
     # mat structure: ele, A, frac, basename
     A = mat.A
     conc = mat.frac/100.
-    mat_term = old_div((constants.N_A * conc), A)
+    mat_term = (constants.N_A * conc) / A
     return mat_term
 
 
@@ -422,14 +416,14 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):   # return spec {energy [keV] : si
         # convert from MeV to keV
         energy = int(float(line[0])*constants.MeV_to_keV)
         # convert from mb/MeV to cm^2/MeV
-        sigma = old_div(float(line[1])*constants.mb_to_cm2, constants.MeV_to_keV)    # Divide by 10^30
+        sigma = float(line[1])*constants.mb_to_cm2 / constants.MeV_to_keV    # Divide by 10^30
         spec[energy] = sigma 
     return spec # cm^2/MeV
 
 
 def rebin(histo, step, minbin, maxbin): # histo = spec_raw
     # histo - distribution of the neutron cross section by their energy output for specific alpha and nuclei
-    nbins = old_div((maxbin-minbin), step)   # Number of columns in the new spectrum
+    nbins = (maxbin-minbin) / step   # Number of columns in the new spectrum
     newhisto = {}
     normhisto = {}
     for i in sorted(histo):  # i - is energy
@@ -459,7 +453,7 @@ def rebin(histo, step, minbin, maxbin): # histo = spec_raw
                 normhisto[overflowbin] = delta
         # Otherwise, calculate the bin
         # New bin size is a multiple of delta_bin=100keV
-        newbin = int(minbin+(int(old_div((i-minbin), step))*step))
+        newbin = int(minbin+(int((i-minbin) / step)*step))
         if newbin in newhisto:  # newhisto has delta_bin = 100keV
             newhisto[newbin] += histo[i]*delta
             normhisto[newbin] += delta
@@ -718,10 +712,10 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
 
     for [e_a, intensity] in alpha_ene_cdf:
         counter += 1
-        if counter % (int(old_div(len(alpha_ene_cdf), 100))) == 0:
+        if counter % (int(len(alpha_ene_cdf) / 100)) == 0:
             sys.stdout.write('\r')
-            sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div(counter*100, len(alpha_ene_cdf))), 
-                                                old_div(100*counter, len(alpha_ene_cdf))))
+            sys.stdout.write('[%-100s] %d%%' % ('='*int(counter*100 / len(alpha_ene_cdf)), 
+                                                100*counter / len(alpha_ene_cdf)))
             sys.stdout.flush()
         
         stopping_power = calcStoppingPower(e_a, mat_comp)   # ksi(E_a)
@@ -734,7 +728,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             # Part of formulae that is inside the integral.
-            prefactors = old_div((intensity/100.) * mat_term * delta_ea, stopping_power)
+            prefactors = (intensity/100.) * mat_term * delta_ea / stopping_power
             if not os.path.exists(isoDir(mat.ele, mat.A) + 'JendlOut'): 
                 # print('No such Jendl file: ', mat.ele, mat.A) 
                 mat.basename = 't'
@@ -812,8 +806,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                         spec_tot[e] = val
 
     sys.stdout.write('\r')
-    sys.stdout.write('[%-100s] %d%%' % ('='*int(old_div((counter*100),
-                     len(alpha_ene_cdf))), old_div(100*(counter+1), len(alpha_ene_cdf))))
+    sys.stdout.write('[%-100s] %d%%' % ('='*int((counter*100) / len(alpha_ene_cdf)), 100*(counter+1) / len(alpha_ene_cdf)))
     sys.stdout.flush()
     print('', file=sys.stdout)
     

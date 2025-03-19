@@ -75,7 +75,7 @@ def calc():
             fig, tx = plt.subplots()
 
             max_prob = max(aspec_norm.values())
-            viridis_colors = [cm.viridis(i / (10000-1)) for i in range(10000)]
+            viridis_colors = [cm.viridis(i / (10_000-1)) for i in range(10_000)]
 
             xbins = np.unique(sorted({key[0] for key in aspec_norm.keys()}))
             ybins = np.unique(sorted({key[1] for key in aspec_norm.keys()}))

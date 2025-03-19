@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from __future__ import print_function
+
 import sys
 import os
 sys.path.insert(0, './Scripts/')
@@ -13,11 +13,11 @@ import getAbundance as isoabund
 
 class constants:
     N_A = 6.0221409e+23
-    MeV_to_keV= 1.e3
+    MeV_to_keV= 1_000
     mb_to_cm2 = 1.e-27
-    year_to_s = 31536000 
+    year_to_s = 31_536_000 
     min_bin   = 0   # keV
-    max_bin   = 25000  # keV it was 20000
+    max_bin   = 25_000  # keV it was 20000
     delta_bin = 100 # keV
     run_talys  = False
     run_alphas = True
@@ -168,7 +168,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
                 continue
             e_curr = float(line[0])
             if str(line[1]) == 'keV':
-                e_curr /= 1000
+                e_curr /= 1_000
             elif str(line[1]) == 'MeV':
                 e_curr *= 1
             sp_curr = float(line[3])+float(line[2])

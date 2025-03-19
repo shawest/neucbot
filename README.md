@@ -76,7 +76,6 @@ bash, was written for bash 4.1.2.
 Before start you may need to install few libraries using pip:
 ```bash
 pip install sgmllib3k
-pip install future
 pip install requests
 pip install bs4
 pip install matplotlib
