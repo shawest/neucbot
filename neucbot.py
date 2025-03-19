@@ -2,15 +2,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import division
-from past.utils import old_div  # type: ignore # pip install future
+
+# pip install future
+from past.utils import old_div  # type: ignore 
+
 import sys
 import os
 sys.path.insert(0, './Scripts/')    # vscode suggests better solution via adding './Scripts' to extraPass
 import subprocess
 import shutil
-import parseENSDF as ensdf  # type: ignore # pip install sgmllib3k
+
+# pip install sgmllib3k
+import parseENSDF as ensdf  # type: ignore 
+
 import getNaturalIsotopes as gni    # type: ignore 
 import getAbundance as isoabund # type: ignore 
+
+# pip install matplotlib
 import matplotlib.pyplot as plt # type: ignore 
 
 import sys

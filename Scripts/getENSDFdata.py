@@ -13,10 +13,15 @@ import socket
 from urllib.request import Request
 from sgmllib import SGMLParser      # лучше использовать библиотеку lxml    https://stackoverflow.com/questions/4352320/sgml-parsing-in-python3-1
 
+# pip install requests
 import requests
+
 import urllib.error
 from urllib.parse import urlparse, urljoin
+
+# pip install bs4
 from bs4 import BeautifulSoup
+
 import urllib.request
 from urllib.request import urlopen
 

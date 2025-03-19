@@ -73,6 +73,15 @@ NeuCBOT was written specifically for Python 2.6.6 and upadated to Python
 3.12.6. To the extent that some scripts included in this package rely on
 bash, was written for bash 4.1.2.
 
+Before start you may need to install few libraries using pip:
+```bash
+pip install sgmllib3k
+pip install future
+pip install requests
+pip install bs4
+pip install matplotlib
+```
+
 This code itself doesn't do anything particularly fancy, and
 so it will likely work on systems running different versions
 of Python and bash. However, it is possible that changing syntax
