@@ -16,11 +16,7 @@ import getAbundance as isoabund # type: ignore
 # pip install matplotlib
 import matplotlib.pyplot as plt # type: ignore 
 
-import sys
-import os
 import re
-import subprocess
-import shutil
 import math
 from Scripts import getNaturalIsotopes as gni
 from Scripts import parseENSDF as ensdf
@@ -67,7 +63,7 @@ class material:
 
 def isoDir(ele, A): # example './Data/Isotopes/Be/Be9/'
     with open(r'./Data/routes.txt', 'r') as file:
-        return file.readlines()[14].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+        return file.readlines()[15].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
 
 
 def save(name='', fmt='png'):
@@ -930,7 +926,7 @@ def main():
             basename = mat.basename
             if basename == 't':
                 with open(r'./Data/routes.txt', 'r') as file:
-                    if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
+                    if not os.path.exists(file.readlines()[15].rstrip()+ele.capitalize()):
                         if constants.download_version == 2:
                             print('\tDownloading (TALYS-1.95) data for', ele, file=sys.stdout)
                             bashcmd = './Scripts/download_element.sh ' + ele
@@ -945,7 +941,7 @@ def main():
                             process = subprocess.call(bashcmd, shell=True)
             else:
                 with open(r'./Data/routes.txt', 'r') as file:
-                    if not os.path.exists('jendl'+file.readlines()[14].rstrip()+ele.capitalize()):
+                    if not os.path.exists('jendl'+file.readlines()[15].rstrip()+ele.capitalize()):
                         print('ERROR: there is no folder for jendl')
                         bashcmd = './Scripts/download_element_jendl.sh '
 
