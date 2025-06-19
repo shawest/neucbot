@@ -63,7 +63,7 @@ class material:
 
 def isoDir(ele, A): # example './Data/Isotopes/Be/Be9/'
     with open(r'./Data/routes.txt', 'r') as file:
-        return file.readlines()[15].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
+        return file.readlines()[14].rstrip()+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
 
 
 def save(name='', fmt='png'):
@@ -152,7 +152,7 @@ def loadChainAlphaList(fname):  # returns list [E_alpha, Intesity] for each isot
             print(iso, file = constants.ofile) 
             print('\t', aList_forIso, file = constants.ofile)
         for [ene, intensity] in aList_forIso:
-            alpha_list.append([ene, intensity*br / 10])    #why multiply the branching ratio by intensity?
+            alpha_list.append([ene, intensity*br / 100])    #why multiply the branching ratio by intensity?
     return alpha_list
 
 
@@ -481,6 +481,11 @@ def integrate(histo):
 def readTotalNXsectJENDL(e_a, ele, A, MT): # return JENDL XS of (a,n) reaction in cm2
 
     dirname = isoDir(ele, A) + 'JendlOut'
+
+    # dirname = isoDir(ele, A) + 'MohrOut'
+    # if e_a > 7.96:
+    #     dirname = isoDir(ele, A) + 'JendlOut'
+
     fname = dirname + '/MT' + str(MT) + '/cross-section' 
     f = open(fname) 
     lines = [line.split() for line in f.readlines()] 
@@ -506,12 +511,12 @@ def readTotalNXsect(e_a, ele, A): # return TALYS XS of (a,n) reaction in cm2
     xsect_line = 0
     for line in lines:  # Looking for particular line in file '.../TalysOut/outputE...'
         if line == ['2.', 'Binary', 'non-elastic', 'cross', 'sections', '(non-exclusive)']:
-
             break
         else:
             xsect_line += 1
 
-    xsect_line += 3  # (a,n) XS is stored three lines below line '2. Binary non-elastic cross sections (non-exclusive)'
+    xsect_line += 3 # (a,n) XS is stored three lines below the line 
+                    # '2. Binary non-elastic cross sections (non-exclusive)'
     if len(lines) < xsect_line:
         return 0
     if lines[xsect_line][0] != 'neutron':
@@ -519,6 +524,11 @@ def readTotalNXsect(e_a, ele, A): # return TALYS XS of (a,n) reaction in cm2
     sigma = float(lines[xsect_line][2])  # (a,n) XS in mb (= 10^-27 cm2)
     sigma *= constants.mb_to_cm2    
     f.close()
+
+    # f = open('talys_XS_print', 'a+')
+    # f.write(str(e_a) + '\t' + str(sigma / constants.mb_to_cm2) + '\n')
+    # f.close()
+
     return sigma    # XS in cm2
 
 
@@ -724,7 +734,8 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             # Part of formulae that is inside the integral.
-            prefactors = (intensity/100.) * mat_term * delta_ea / stopping_power
+            prefactors = ((intensity/100.) * mat_term * delta_ea )/ stopping_power
+
             if not os.path.exists(isoDir(mat.ele, mat.A) + 'JendlOut'): 
                 # print('No such Jendl file: ', mat.ele, mat.A) 
                 mat.basename = 't'
@@ -786,7 +797,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
                 spec_raw = getIsotopeDifferentialNSpec(e_a, mat.ele, mat.A) 
                 spec = rebin(spec_raw, constants.delta_bin, constants.min_bin, constants.max_bin) 
                 xsect = prefactors * readTotalNXsect(e_a, mat.ele, mat.A) # cm^2 
-
+                
                 total_xsect += xsect 
                 matname = str(mat.ele)+str(int(mat.A)) 
                 if matname in xsects: 
@@ -811,6 +822,7 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
 
     print('',file = constants.ofile)
     print('# Total neutron yield = ', '{0:.2e}'.format(total_xsect), ' n/decay', file = constants.ofile)
+
     for x in sorted(xsects):
         print('\t',x,'{0:.2e}'.format(xsects[x]), file = constants.ofile)
     print('# Integral of spectrum = ', '{0:.2e}'.format(integrate(newspec)), " n/decay", file = constants.ofile)
@@ -926,7 +938,7 @@ def main():
             basename = mat.basename
             if basename == 't':
                 with open(r'./Data/routes.txt', 'r') as file:
-                    if not os.path.exists(file.readlines()[15].rstrip()+ele.capitalize()):
+                    if not os.path.exists(file.readlines()[14].rstrip()+ele.capitalize()):
                         if constants.download_version == 2:
                             print('\tDownloading (TALYS-1.95) data for', ele, file=sys.stdout)
                             bashcmd = './Scripts/download_element.sh ' + ele
@@ -941,7 +953,7 @@ def main():
                             process = subprocess.call(bashcmd, shell=True)
             else:
                 with open(r'./Data/routes.txt', 'r') as file:
-                    if not os.path.exists('jendl'+file.readlines()[15].rstrip()+ele.capitalize()):
+                    if not os.path.exists('jendl'+file.readlines()[14].rstrip()+ele.capitalize()):
                         print('ERROR: there is no folder for jendl')
                         bashcmd = './Scripts/download_element_jendl.sh '
 
