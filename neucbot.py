@@ -1,5 +1,5 @@
-#!/usr/bin/python
-from __future__ import print_function
+#!/usr/bin/python3
+
 import sys
 import os
 sys.path.insert(0, './Scripts/')
@@ -7,15 +7,15 @@ import re
 import subprocess
 import shutil
 import math
-import parseENSDF as ensdf
-import getNaturalIsotopes as gni
-import getAbundance as isoabund
+from neucbot import ensdf
+
+from neucbot import elements
 
 class constants:
     N_A = 6.0221409e+23
     MeV_to_keV= 1.e3
     mb_to_cm2 = 1.e-27
-    year_to_s = 31536000 
+    year_to_s = 31536000
     min_bin   = 0   # keV
     max_bin   = 20000  # keV
     delta_bin = 100 # keV
@@ -57,7 +57,7 @@ def generateAlphaList(ele, A):
 
 def loadAlphaList(fname):
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     alpha_list = []
     for words in tokens:
         if words[0][0] == '#' or len(words) < 2:
@@ -88,7 +88,7 @@ def getAlphaListIfExists(ele,A):
 
 def loadChainAlphaList(fname):
     f = open(fname)
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     alpha_list = []
     for line in tokens:
         if len(list(line)) < 2 or line[0][0] == '#':
@@ -97,7 +97,7 @@ def loadChainAlphaList(fname):
         iso = line[0]
         br = float(line[1])
         [ele,A] = parseIsotope(iso)
-        
+
         # Now get the isotope's alpha list and add it to the chain's list
         aList_forIso = getAlphaListIfExists(ele,A)
         if constants.print_alphas:
@@ -110,24 +110,27 @@ def loadChainAlphaList(fname):
 def readTargetMaterial(fname):
     f = open(fname)
     mat_comp = []
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(list(line)) < 3:
             continue
         if line[0][0] == '#':
             continue
-        ele = line[0].lower()
+        element = elements.Element(line[0])
         A = int(line[1])
         frac = float(line[2])
 
         if A == 0:
-            natIso_list = gni.findIsotopes(ele).split()
+            natIso_list = element.isotopes()
+            print(natIso_list)
             for A_i in natIso_list:
-                abund = float(isoabund.findAbundance(str(A_i)+ele.capitalize()))
-                mater = material(ele,A_i,frac*abund/100.)
+                abund = element.abundance(A_i)
+                print(A_i)
+                print(abund)
+                mater = material(element.symbol,A_i,frac*abund/100.)
                 mat_comp.append(mater)
         else:
-            mater = material(ele,A,frac)
+            mater = material(element.symbol,A,frac)
             mat_comp.append(mater)
 
     # Normalize
@@ -150,14 +153,14 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
             mat_comp_reduced[mat.ele] += mat.frac
         else:
             mat_comp_reduced[mat.ele] = mat.frac
-    
+
     # Then, for each element, get the stopping power at this alpha energy
     for mat in mat_comp_reduced:
         spDir = './Data/StoppingPowers/'
         spFile = spDir + mat.lower() + '.dat'
         spf = open(spFile)
-        
-        tokens = map(lambda line: line.split(), spf.readlines())
+
+        tokens = [line.split() for line in spf.readlines()]
         first = True
         sp_found = False
         e_curr = 0
@@ -174,7 +177,7 @@ def calcStoppingPower(e_alpha_MeV,mat_comp):
             elif str(line[1]) == 'MeV':
                 e_curr *= 1
             sp_curr = float(line[3])+float(line[2])
-            
+
             # Alpha energy is below the list. Use the lowest energy in the list
             if e_curr > e_alpha and first:
                 first = False
@@ -218,7 +221,7 @@ def runTALYS(e_a, ele, A):
     inp_f.write(command)
     inp_f.close()
     out_fname = outdir+"outputE"+str(e_a)
-    
+
     bashcmd = 'talys < '+inp_fname+' > '+out_fname
     print('Running TALYS:\t ', bashcmd, file = constants.ofile)
     runscript_fname = "./runscript_temp.sh"
@@ -243,7 +246,7 @@ def runTALYS(e_a, ele, A):
         blank_f = open(fname,'w')
         blank_f.write("EMPTY")
         blank_f.close()
-        
+
 
 def getMatTerm(mat,mat_comp):
     # mat_comp structure: [ele,A,frac]
@@ -263,7 +266,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
         print('Outpath', outpath, file = constants.ofile)
         runTALYS(int(100*e_a)/100.,ele,A)
-           
+
     # If the file does not exist, run TALYS
     if not os.path.exists(fname):
         if constants.run_talys:
@@ -275,7 +278,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         else:
             print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
             return {}
-    
+
     # Load the file
     # If no output was produced, skip this energy
     if not os.path.exists(outpath):
@@ -283,7 +286,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
 
     f = open(fname)
     spec = {}
-    tokens = map(lambda line: line.split(), f.readlines())
+    tokens = [line.split() for line in f.readlines()]
     for line in tokens:
         if len(list(line)) < 1 or line[0] == 'EMPTY':
             break
@@ -301,7 +304,7 @@ def getIsotopeDifferentialNSpec(e_a, ele, A):
         sigma = float(line[1])*constants.mb_to_cm2/constants.MeV_to_keV
         spec[energy] = sigma
     return spec
-    
+
 def rebin(histo,step,minbin,maxbin):
     nbins = (maxbin-minbin)/step
     newhisto = {}
@@ -358,21 +361,21 @@ def integrate(histo):
 
         integral += histo[i]*delta
     return integral
-    
+
 def readTotalNXsect(e_a,ele,A):
     fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
     if not os.path.exists(fname):
         print("Could not find file ", fname, file = constants.ofile)
         return 0
     f = open(fname)
-    lines = list(map(lambda line: line.split(), f.readlines()))
+    lines = list([line.split() for line in f.readlines()])
     xsect_line  = 0
     for line in lines:
         if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
             break
         else:
             xsect_line += 1
-    
+
     xsect_line += 3
     #print("Lines: ", len(list(lines)), " xsect_line = ", xsect_line)
 
@@ -477,7 +480,7 @@ def main():
         if arg == '-m':
             mat_file = sys.argv[sys.argv.index(arg)+1]
             print('load target material', mat_file, file = sys.stdout)
-            mat_comp = readTargetMaterial(mat_file)            
+            mat_comp = readTargetMaterial(mat_file)
         if arg == '-s':
             alpha_step_size = float(sys.argv[sys.argv.index(arg)+1])
             print('step size', alpha_step_size, file = sys.stdout)
