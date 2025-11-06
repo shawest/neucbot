@@ -1,4 +1,4 @@
-elements = {'H'  : 1, 'He' : 2, 'Li' : 3, 'Be' : 4, 'B'  : 5,
+elementsToZ = {'H'  : 1, 'He' : 2, 'Li' : 3, 'Be' : 4, 'B'  : 5,
             'C'  : 6, 'N'  : 7, 'O'  : 8, 'F'  : 9, 'Ne' : 10,
             'Na' : 11,'Mg' : 12,'Al' : 13,'Si' : 14,'P'  : 15,
             'S'  : 16,'Cl' : 17,'Ar' : 18,'K'  : 19,'Ca' : 20,
@@ -23,11 +23,10 @@ elements = {'H'  : 1, 'He' : 2, 'Li' : 3, 'Be' : 4, 'B'  : 5,
             'Rg' :111,'Cn' :112,'Uut':113,'Fl' :114,'Uup':115,
             'Lv' :116,'Uus':117,'Uuo':118}
 
+zToElements = {z: element for element, z in elementsToZ.items()}
+
 def getZ(ele):
-    return elements[ele.capitalize()]
+    return elementsToZ.get(ele.capitalize())
 
 def getElement(z):
-    for ele in elements.keys():
-        if elements[ele] == z:
-            return ele
-    return "None"
+    return zToElements.get(z, "None")
