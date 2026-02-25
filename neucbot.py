@@ -5,13 +5,13 @@ import os
 sys.path.insert(0, './Scripts/')
 import re
 import subprocess
-import shutil
 import math
 
 from neucbot import alpha
 from neucbot import ensdf
 from neucbot import elements
 from neucbot import material
+from neucbot import talys
 from neucbot import utils
 
 class constants:
@@ -32,79 +32,34 @@ class constants:
 def isoDir(ele,A):
     return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
 
-def runTALYS(e_a, ele, A):
-    iso = str(ele)+str(int(A))
-    inpdir = isoDir(ele,A) + 'TalysInputs/'
-    outdir = isoDir(ele,A) + 'TalysOut/'
-    nspecdir= isoDir(ele,A) + 'NSpectra/'
-    if not os.path.exists(inpdir):
-        os.makedirs(inpdir)
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    if not os.path.exists(nspecdir):
-        os.makedirs(nspecdir)
-
-#    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2\n"
-    command = "\nprojectile a\nejectiles p n g\nelement "+ele+"\nmass "+str(int(A))+"\nenergy "+str(e_a)+"\npreequilibrium y\ngiantresonance y\nmultipreeq y\noutspectra y\noutlevels y\noutgamdis y\nfilespectrum n\nelwidth 0.2"
-
-    inp_fname = inpdir+"inputE"+str(e_a)
-    inp_f = open(inp_fname,'w')
-    inp_f.write(command)
-    inp_f.close()
-    out_fname = outdir+"outputE"+str(e_a)
-
-    bashcmd = 'talys < '+inp_fname+' > '+out_fname
-    print('Running TALYS:\t ', bashcmd, file = constants.ofile)
-    runscript_fname = "./runscript_temp.sh"
-    runscript_f = open(runscript_fname,"w")
-    runscript_f.write("#!/usr/bin/bash\n\n"+bashcmd)
-    runscript_f.close()
-    process = subprocess.call(bashcmd,shell=True)
-    # Move the output neutron spectrum to the appropriate directory
-    ls = os.listdir("./")
-
-    moved_file = False
-    for f in ls:
-        if "nspec" in f:
-            if os.path.exists(nspecdir+f):
-                os.remove(nspecdir+f)
-            fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
-            shutil.move(f, fname)
-            moved_file = True
-    # If no neutron spectrum file is found, make a blank one
-    if not moved_file:
-        fname = nspecdir+'nspec{0:0>7.3f}.tot'.format(e_a)
-        blank_f = open(fname,'w')
-        blank_f.write("EMPTY")
-        blank_f.close()
-
 def getIsotopeDifferentialNSpec(e_a, ele, A):
+    talys_runner = talys.Runner(ele, A)
+    rounded_alpha_energy = int(100 * e_a)/100.
+
     target = ele+str(int(A))
-    path = isoDir(ele,A) + 'NSpectra/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-    fname = path+'nspec{0:0>7.3f}.tot'.format(int(100*e_a)/100.)
-    outpath = isoDir(ele,A) + 'TalysOut'
+    output_dir = talys_runner.output_dir
+
     if constants.force_recalculation:
-        print('Forcibily running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-        print('Outpath', outpath, file = constants.ofile)
-        runTALYS(int(100*e_a)/100.,ele,A)
+        print('Forcibily running TALYS for', rounded_alpha_energy, 'alpha on', target, file = constants.ofile)
+        print('Outpath', output_dir, file = constants.ofile)
+        talys_runner.run(rounded_alpha_energy)
 
     # If the file does not exist, run TALYS
+    fname = talys_runner.spectra_file(rounded_alpha_energy)
     if not os.path.exists(fname):
         if constants.run_talys:
             while not os.path.exists(fname):
-                print('Running TALYS for', int(100*e_a)/100., 'alpha on', target, file = constants.ofile)
-                print('Outpath', outpath, file = constants.ofile)
-                runTALYS(int(100*e_a)/100.,ele,A)
-                ls = os.listdir(outpath)
+                print('Running TALYS for', rounded_alpha_energy, 'alpha on', target, file = constants.ofile)
+                print('Outpath', output_dir, file = constants.ofile)
+                talys_runner.run(rounded_alpha_energy)
+                ls = os.listdir(output_dir)
         else:
             print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
             return {}
 
     # Load the file
     # If no output was produced, skip this energy
-    if not os.path.exists(outpath):
+    if not os.path.exists(output_dir):
         return {}
 
     f = open(fname)
