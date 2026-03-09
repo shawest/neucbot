@@ -3,21 +3,14 @@
 import sys
 import os
 sys.path.insert(0, './Scripts/')
-import re
 import subprocess
-import math
 
 from neucbot import alpha
-from neucbot import ensdf
-from neucbot import elements
 from neucbot import material
 from neucbot import talys
 from neucbot import utils
 
 class constants:
-    MeV_to_keV= 1.e3
-    mb_to_cm2 = 1.e-27
-    year_to_s = 31536000
     min_bin   = 0   # keV
     max_bin   = 20000  # keV
     delta_bin = 100 # keV
@@ -28,60 +21,6 @@ class constants:
     download_version = 2
     force_recalculation = False
     ofile = sys.stdout
-
-def isoDir(ele,A):
-    return './Data/Isotopes/'+ele.capitalize()+'/'+ele.capitalize()+str(int(A))+'/'
-
-def getIsotopeDifferentialNSpec(e_a, ele, A):
-    talys_runner = talys.Runner(ele, A)
-    rounded_alpha_energy = int(100 * e_a)/100.
-
-    target = ele+str(int(A))
-    output_dir = talys_runner.output_dir
-
-    if constants.force_recalculation:
-        print('Forcibily running TALYS for', rounded_alpha_energy, 'alpha on', target, file = constants.ofile)
-        print('Outpath', output_dir, file = constants.ofile)
-        talys_runner.run(rounded_alpha_energy)
-
-    # If the file does not exist, run TALYS
-    fname = talys_runner.spectra_file(rounded_alpha_energy)
-    if not os.path.exists(fname):
-        if constants.run_talys:
-            while not os.path.exists(fname):
-                print('Running TALYS for', rounded_alpha_energy, 'alpha on', target, file = constants.ofile)
-                print('Outpath', output_dir, file = constants.ofile)
-                talys_runner.run(rounded_alpha_energy)
-                ls = os.listdir(output_dir)
-        else:
-            print("Warning, no (alpha,n) data found for E_a =", e_a,"MeV on target", target,"...skipping. Consider running with the -d or -t options", file = constants.ofile)
-            return {}
-
-    # Load the file
-    # If no output was produced, skip this energy
-    if not os.path.exists(output_dir):
-        return {}
-
-    f = open(fname)
-    spec = {}
-    tokens = [line.split() for line in f.readlines()]
-    for line in tokens:
-        if len(list(line)) < 1 or line[0] == 'EMPTY':
-            break
-        if line[0][0] == '#':
-            continue
-        # line[0] = E-out
-        # line[1] = Total
-        # line[2] = Direct
-        # line[3] = Pre-equil
-        # line[4] = Mult. preeq
-        # line[5] = Compound
-        # line[6] = Pre-eq ratio
-        # convert from mb/MeV to cm^2/MeV
-        energy = int(float(line[0])*constants.MeV_to_keV)
-        sigma = float(line[1])*constants.mb_to_cm2/constants.MeV_to_keV
-        spec[energy] = sigma
-    return spec
 
 def rebin(histo,step,minbin,maxbin):
     nbins = (maxbin-minbin)/step
@@ -140,32 +79,6 @@ def integrate(histo):
         integral += histo[i]*delta
     return integral
 
-def readTotalNXsect(e_a,ele,A):
-    fname = isoDir(ele,A) + 'TalysOut/outputE' + str(int(100*e_a)/100.)
-    if not os.path.exists(fname):
-        print("Could not find file ", fname, file = constants.ofile)
-        return 0
-    f = open(fname)
-    lines = list([line.split() for line in f.readlines()])
-    xsect_line  = 0
-    for line in lines:
-        if line == ['2.','Binary','non-elastic','cross','sections','(non-exclusive)']:
-            break
-        else:
-            xsect_line += 1
-
-    xsect_line += 3
-    #print("Lines: ", len(list(lines)), " xsect_line = ", xsect_line)
-
-    if len(list(lines))==0 or  len(list(lines)) < xsect_line:
-        return 0
-    if list(lines)[xsect_line][0] != 'neutron':
-        return 0
-    sigma = float(lines[xsect_line][2])
-    sigma *= constants.mb_to_cm2
-    #print("sigma = " , sigma)
-    return sigma
-
 def run_alpha(alpha_list, mat_comp, e_alpha_step):
     binsize = 0.1 # Bin size for output spectrum
 
@@ -187,14 +100,14 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
         for mat in mat_comp.materials:
             mat_term = mat.material_term()
             # Get alpha n spectrum for this alpha and this target
-            spec_raw = getIsotopeDifferentialNSpec(e_a, mat.element.symbol,  mat.mass_number)
+            spec_raw = mat.differential_n_spec(e_a, constants.run_talys, constants.force_recalculation)
             spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
             # Add this spectrum to the total spectrum
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
                 delta_ea = e_a
             prefactors = (intensity/100.)*mat_term*delta_ea/stopping_power
-            xsect = prefactors * readTotalNXsect(e_a,mat.element.symbol, mat.mass_number)
+            xsect = prefactors * mat.cross_section(e_a)
             total_xsect += xsect
             matname = str(mat.element.symbol)+str(mat.mass_number)
             if matname in xsects:

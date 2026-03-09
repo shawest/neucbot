@@ -1,8 +1,18 @@
+import os
+import re
+
 from bisect import bisect
 
 from neucbot import elements
+from neucbot import talys
 
 N_A = 6.0221409e23
+MeV_to_keV = 1.0e3
+mb_to_cm2 = 1.0e-27
+
+NEUTRON_CROSS_SECTION_PATTERN = re.compile(
+    r"2. Binary non-elastic cross sections .non-exclusive.\n\n\s+gamma.*\n\s+neutron = (?P<cross_section>\d\.\d{5}E[\+\-]\d{2})"
+)
 
 
 class Isotope:
@@ -11,9 +21,71 @@ class Isotope:
         self.element = element
         self.mass_number = int(mass_number)
         self.fraction = float(fraction)
+        self.talys_runner = talys.Runner(self.element.symbol, self.mass_number)
 
     def material_term(self):
         return (N_A * self.fraction) / self.mass_number
+
+    def differential_n_spec(
+        self, alpha_energy, run_talys=False, force_recalculation=False
+    ):
+        rounded_alpha_energy = int(100 * alpha_energy) / 100.0
+
+        if force_recalculation:
+            self.talys_runner.run(rounded_alpha_energy)
+
+        spectra_file_path = self.talys_runner.spectra_file(rounded_alpha_energy)
+        if not os.path.exists(spectra_file_path):
+            if run_talys:
+                attempts = 0
+                while attempts < 3 and not os.path.exists(spectra_file_path):
+                    self.talys_runner.run(rounded_alpha_energy)
+                    attempts += 1
+
+                # If all three attempts to run TALYS failed, exit early
+                if attempts == 3:
+                    return {}
+            else:
+                return {}
+
+        # This should be impossible to reach because the TALYS runner creates
+        # all of these directories on instantiation. TODO: verify then remove
+        if not os.path.exists(self.talys_runner.output_dir):
+            return {}
+
+        spectra_file = open(spectra_file_path)
+        spectra = {}
+
+        for spec in [line.split() for line in spectra_file.readlines()]:
+            if spec == [] or spec[0] == "EMPTY":
+                break
+            elif spec[0][0] == "#":
+                continue
+
+            energy = int(float(spec[0]) * MeV_to_keV)
+            sigma = float(spec[1]) * mb_to_cm2 / MeV_to_keV
+
+            spectra[energy] = sigma
+
+        return spectra
+
+    def cross_section(self, alpha_energy):
+        rounded_alpha_energy = int(100 * alpha_energy) / 100.0
+
+        output_file_path = self.talys_runner.output_file(rounded_alpha_energy)
+
+        if not os.path.exists(output_file_path):
+            return 0
+
+        with open(output_file_path, "r") as output_file:
+            file_text = output_file.read()
+
+        if cross_section_match := re.search(NEUTRON_CROSS_SECTION_PATTERN, file_text):
+            cross_section = float(cross_section_match.group("cross_section"))
+
+            return cross_section * mb_to_cm2
+        else:
+            return 0
 
 
 class StoppingPowerList:

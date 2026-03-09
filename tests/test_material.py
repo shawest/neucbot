@@ -1,9 +1,183 @@
 import pytest
 
+from unittest import TestCase
+from unittest.mock import call, mock_open, patch
+
 from neucbot import elements, material
+from neucbot.talys import Runner
 
 
-class TestComposition:
+class TestIsotope(TestCase):
+    def setUp(self):
+        carbon = elements.Element("C")
+        self.isotope = material.Isotope(carbon, 13, 1.0)
+
+        with open("./tests/test_material/C13Nspec.txt") as nspec_file:
+            self.nspec_text = nspec_file.read()
+
+        self.expected_nspec = {
+            100: 4.11934e-33,
+            200: 4.641829999999999e-33,
+            300: 5.2085800000000005e-33,
+            400: 5.819920000000001e-33,
+            500: 6.47565e-33,
+        }
+
+    def test_material_term(self):
+        assert self.isotope.material_term() == material.N_A * 1.0 / 13
+
+    @patch.object(Runner, "run")
+    def test_differential_n_spec_file_exists(self, mocked_talys_run):
+        mocked_open = mock_open(read_data=self.nspec_text)
+        with patch("builtins.open", mocked_open):
+            assert self.isotope.differential_n_spec(1.0) == self.expected_nspec
+
+            mocked_open.assert_has_calls(
+                [
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                ]
+            )
+
+    @patch("os.path.exists", return_value=False)
+    def test_differential_n_spec_no_file_no_talys(self, mocked_exists):
+        assert self.isotope.differential_n_spec(1.0, False) == {}
+        mocked_exists.assert_has_calls(
+            [
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+            ]
+        )
+
+    @patch.object(Runner, "run")
+    @patch("os.path.exists")
+    def test_differential_n_spec_no_file_run_talys(
+        self, mocked_exists, mocked_talys_run
+    ):
+        mocked_exists.side_effect = [
+            False,  # File doesn't exist initially
+            False,  # Before first TALYS Run
+            True,  # Found after first TALYS Run
+            True,  # TALYS Output directory exists
+        ]
+
+        mocked_open = mock_open(read_data=self.nspec_text)
+        with patch("builtins.open", mocked_open):
+            assert self.isotope.differential_n_spec(1.0, True) == self.expected_nspec
+
+            mocked_open.assert_has_calls(
+                [
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                ]
+            )
+
+            mocked_exists.assert_has_calls(
+                [
+                    # First check
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                    # Before successful TALYS run
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                    # After successful TALYS run
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                    call("./Data/Isotopes/C/C13/TalysOut"),
+                ]
+            )
+
+    @patch.object(Runner, "run")
+    @patch("os.path.exists", return_value=False)
+    def test_differential_n_spec_no_file_run_talys_no_successful_retries(
+        self, mocked_exists, mocked_talys_run
+    ):
+        assert self.isotope.differential_n_spec(1.0, True) == {}
+        mocked_exists.assert_has_calls(
+            [
+                # First check
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                # Three failed attempts
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+            ]
+        )
+
+    @patch("os.path.exists")
+    def test_differential_n_spec_no_output_dir(self, mocked_exists):
+        mocked_exists.side_effect = [True, False]
+        assert self.isotope.differential_n_spec(1.0) == {}
+
+        mocked_exists.assert_has_calls(
+            [
+                call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                call("./Data/Isotopes/C/C13/TalysOut"),
+            ]
+        )
+
+    @patch.object(Runner, "run")
+    @patch("os.path.exists", return_value=True)
+    def test_differential_n_spec_force_recalculation(
+        self, mocked_exists, mocked_talys_run
+    ):
+        mocked_open = mock_open(read_data=self.nspec_text)
+        with patch("builtins.open", mocked_open):
+            assert (
+                self.isotope.differential_n_spec(1.0, False, True)
+                == self.expected_nspec
+            )
+
+            mocked_open.assert_has_calls(
+                [
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                ]
+            )
+
+    @patch("os.path.exists", return_value=True)
+    def test_cross_section_valid_file(self, mocked_exists):
+        with open("./tests/test_material/TalysOut/outputE6.79") as talys_out_file:
+            talys_out_text = talys_out_file.read()
+            with patch("builtins.open", mock_open(read_data=talys_out_text)):
+                assert self.isotope.cross_section(6.790000000000042) == 3.40154e-25
+
+        with open("./tests/test_material/TalysOut/outputE6.78") as talys_out_file:
+            talys_out_text = talys_out_file.read()
+            with patch("builtins.open", mock_open(read_data=talys_out_text)):
+                assert self.isotope.cross_section(6.780000000000042) == 3.39437e-25
+
+        with open("./tests/test_material/TalysOut/outputE6.77") as talys_out_file:
+            talys_out_text = talys_out_file.read()
+            with patch("builtins.open", mock_open(read_data=talys_out_text)):
+                assert self.isotope.cross_section(6.770000000000042) == 3.38704e-25
+
+        with open("./tests/test_material/TalysOut/outputE6.76") as talys_out_file:
+            talys_out_text = talys_out_file.read()
+            with patch("builtins.open", mock_open(read_data=talys_out_text)):
+                assert self.isotope.cross_section(6.760000000000042) == 3.37965e-25
+
+        with open("./tests/test_material/TalysOut/outputE1.05") as talys_out_file:
+            talys_out_text = talys_out_file.read()
+            with patch("builtins.open", mock_open(read_data=talys_out_text)):
+                assert self.isotope.cross_section(1.05) == 1.51335e-28
+
+    @patch("re.search", return_value=None)
+    @patch("os.path.exists", return_value=True)
+    def test_cross_section_no_file_content_match(self, mocked_exists, mocked_search):
+        mocked_open = mock_open(read_data=self.nspec_text)
+        with patch("builtins.open", mocked_open):
+            assert self.isotope.cross_section(7.77) == 0
+
+            mocked_open.assert_has_calls(
+                [
+                    call("./Data/Isotopes/C/C13/TalysOut/outputE7.77", "r"),
+                ]
+            )
+
+    @patch("os.path.exists", return_value=False)
+    def test_cross_section_no_file_exists(self, mocked_exists):
+        assert self.isotope.cross_section(5.55) == 0
+
+        mocked_exists.assert_has_calls(
+            [call("./Data/Isotopes/C/C13/TalysOut/outputE5.55")]
+        )
+
+
+class TestComposition(TestCase):
     def test_from_file_isotopes_specified(self):
         comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
 
@@ -56,7 +230,7 @@ class TestComposition:
         assert comp.stopping_power(11.0) == 701.5617
 
 
-class TestStoppingPowerList:
+class TestStoppingPowerList(TestCase):
     def test_load_file(self):
         stop_list = material.StoppingPowerList("C")
         stop_list.load_file()
