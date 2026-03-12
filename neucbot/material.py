@@ -87,6 +87,12 @@ class Isotope:
         else:
             return 0
 
+    def talys_spectra_dir(self):
+        return self.talys_runner.talys_spectra_dir()
+
+    def talys_output_dir(self):
+        return self.talys_runner.talys_output_dir()
+
 
 class StoppingPowerList:
     def __init__(self, element_symbol):

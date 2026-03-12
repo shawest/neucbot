@@ -214,7 +214,7 @@ def main():
     if constants.download_data:
         for mat in mat_comp.materials:
             ele = mat.element.symbol
-            if not os.path.exists('./Data/Isotopes/'+ele.capitalize()):
+            if not (os.listdir(mat.talys_output_dir()) and os.listdir(mat.talys_spectra_dir())):
                 if constants.download_version == 2:
                     print('\tDownloading (datset V2) data for',ele, file = sys.stdout)
                     bashcmd = './Scripts/download_element.sh ' + ele
