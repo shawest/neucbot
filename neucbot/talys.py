@@ -77,6 +77,12 @@ class Runner:
             nspec_file.write("EMPTY")
             nspec_file.close()
 
+    def talys_output_dir(self):
+        return self.output_dir
+
+    def talys_spectra_dir(self):
+        return self.spectra_dir
+
     def input_file(self, alpha_energy):
         return os.path.join(self.input_dir, f"inputE{alpha_energy}")
 
