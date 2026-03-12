@@ -27,10 +27,18 @@ class TestIsotope(TestCase):
         assert self.isotope.material_term() == material.N_A * 1.0 / 13
 
     @patch.object(Runner, "run")
-    def test_differential_n_spec_file_exists(self, mocked_talys_run):
+    @patch("os.path.exists", return_value=True)
+    def test_differential_n_spec_file_exists(self, mocked_exists, mocked_talys_run):
         mocked_open = mock_open(read_data=self.nspec_text)
         with patch("builtins.open", mocked_open):
             assert self.isotope.differential_n_spec(1.0) == self.expected_nspec
+
+            mocked_exists.assert_has_calls(
+                [
+                    call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
+                    call("./Data/Isotopes/C/C13/TalysOut"),
+                ]
+            )
 
             mocked_open.assert_has_calls(
                 [
