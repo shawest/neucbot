@@ -31,7 +31,9 @@ class TestIsotope(TestCase):
     def test_differential_n_spec_file_exists(self, mocked_exists, mocked_talys_run):
         mocked_open = mock_open(read_data=self.nspec_text)
         with patch("builtins.open", mocked_open):
-            assert self.isotope.differential_n_spec(1.0) == self.expected_nspec
+            assert (
+                self.isotope.differential_n_spec(1.0).to_dict() == self.expected_nspec
+            )
 
             mocked_exists.assert_has_calls(
                 [
@@ -48,7 +50,7 @@ class TestIsotope(TestCase):
 
     @patch("os.path.exists", return_value=False)
     def test_differential_n_spec_no_file_no_talys(self, mocked_exists):
-        assert self.isotope.differential_n_spec(1.0, False) == {}
+        assert self.isotope.differential_n_spec(1.0, False).to_dict() == {}
         mocked_exists.assert_has_calls(
             [
                 call("./Data/Isotopes/C/C13/NSpectra/nspec001.000.tot"),
@@ -69,7 +71,10 @@ class TestIsotope(TestCase):
 
         mocked_open = mock_open(read_data=self.nspec_text)
         with patch("builtins.open", mocked_open):
-            assert self.isotope.differential_n_spec(1.0, True) == self.expected_nspec
+            assert (
+                self.isotope.differential_n_spec(1.0, True).to_dict()
+                == self.expected_nspec
+            )
 
             mocked_open.assert_has_calls(
                 [
@@ -94,7 +99,7 @@ class TestIsotope(TestCase):
     def test_differential_n_spec_no_file_run_talys_no_successful_retries(
         self, mocked_exists, mocked_talys_run
     ):
-        assert self.isotope.differential_n_spec(1.0, True) == {}
+        assert self.isotope.differential_n_spec(1.0, True).to_dict() == {}
         mocked_exists.assert_has_calls(
             [
                 # First check
@@ -109,7 +114,7 @@ class TestIsotope(TestCase):
     @patch("os.path.exists")
     def test_differential_n_spec_no_output_dir(self, mocked_exists):
         mocked_exists.side_effect = [True, False]
-        assert self.isotope.differential_n_spec(1.0) == {}
+        assert self.isotope.differential_n_spec(1.0).to_dict() == {}
 
         mocked_exists.assert_has_calls(
             [
@@ -126,7 +131,7 @@ class TestIsotope(TestCase):
         mocked_open = mock_open(read_data=self.nspec_text)
         with patch("builtins.open", mocked_open):
             assert (
-                self.isotope.differential_n_spec(1.0, False, True)
+                self.isotope.differential_n_spec(1.0, False, True).to_dict()
                 == self.expected_nspec
             )
 

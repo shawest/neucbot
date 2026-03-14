@@ -11,9 +11,6 @@ from neucbot import talys
 from neucbot import utils
 
 class constants:
-    min_bin   = 0   # keV
-    max_bin   = 20000  # keV
-    delta_bin = 100 # keV
     run_talys  = False
     run_alphas = True
     print_alphas = False
@@ -22,66 +19,7 @@ class constants:
     force_recalculation = False
     ofile = sys.stdout
 
-def rebin(histo,step,minbin,maxbin):
-    nbins = (maxbin-minbin)/step
-    newhisto = {}
-    normhisto = {}
-    for i in sorted(histo):
-        index = sorted(histo).index(i)
-        # Get the spacing between points
-        delta = sorted(histo)[0]
-        if index > 0:
-            delta = sorted(histo)[index] - sorted(histo)[index-1]
-        # If the x value is too low, put it in the underflow bin (-1)
-        if i < minbin:
-            print('Underflow: ', i, ' (minbin = ', minbin, ')',file = constants.ofile)
-            if -1 in newhisto:
-                newhisto[-1] += histo[i]*delta
-                normhisto[-1] += delta
-            else:
-                newhisto[-1] = histo[i]*delta
-                normhisto[-1] = delta
-        # ...or the overflow bin if too high
-        if i > maxbin:
-            print('Overflow: ', histo[i], ' (maxbin = ', maxbin,')', file = constants.ofile)
-            overflowbin = int(nbins+10*step)
-            if overflowbin in newhisto:
-                newhisto[overflowbin] += histo[i]*delta
-                normhisto[overflowbin] += delta
-            else:
-                newhisto[overflowbin] = histo[i]*delta
-                normhisto[overflowbin] = delta
-        # Otherwise, calculate the bin
-        newbin = int(minbin+int((i-minbin)/step)*step)
-        if newbin in newhisto:
-            newhisto[newbin] += histo[i]*delta
-            normhisto[newbin] += delta
-        else:
-            newhisto[newbin] = histo[i]*delta
-            normhisto[newbin] = delta
-
-    # Renormalize the new histogram
-    for i in newhisto:
-        if normhisto[i] > 0:
-            newhisto[i] /= normhisto[i]
-
-    return newhisto
-
-def integrate(histo):
-    integral = 0
-    for i in sorted(histo):
-        # Get the bin width
-        delta = sorted(histo)[0]
-        index = sorted(histo).index(i)
-        if index > 0:
-            delta = sorted(histo)[index] - sorted(histo)[index-1]
-
-        integral += histo[i]*delta
-    return integral
-
 def run_alpha(alpha_list, mat_comp, e_alpha_step):
-    binsize = 0.1 # Bin size for output spectrum
-
     spec_tot = {}
     xsects = {}
     total_xsect = 0
@@ -94,14 +32,13 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             sys.stdout.write("[%-100s] %d%%" % ('='*int(counter*100/len(alpha_ene_cdf)), 100*counter/len(alpha_ene_cdf)))
             sys.stdout.flush()
 
-        stopping_power = 0
-        if stopping_power == 0:
-            stopping_power = mat_comp.stopping_power(e_a)
+        stopping_power = mat_comp.stopping_power(e_a)
+
         for mat in mat_comp.materials:
             mat_term = mat.material_term()
             # Get alpha n spectrum for this alpha and this target
-            spec_raw = mat.differential_n_spec(e_a, constants.run_talys, constants.force_recalculation)
-            spec = rebin(spec_raw,constants.delta_bin,constants.min_bin,constants.max_bin)
+            spec = mat.differential_n_spec(e_a, constants.run_talys, constants.force_recalculation).rebin()
+
             # Add this spectrum to the total spectrum
             delta_ea = e_alpha_step
             if e_a - e_alpha_step < 0:
@@ -110,38 +47,24 @@ def run_alpha(alpha_list, mat_comp, e_alpha_step):
             xsect = prefactors * mat.cross_section(e_a)
             total_xsect += xsect
             matname = str(mat.element.symbol)+str(mat.mass_number)
-            if matname in xsects:
-                xsects[matname] += xsect
-            else:
-                xsects[matname] = xsect
-            for e in spec:
-                val = prefactors * spec[e]
-                if e in spec_tot:
-                    spec_tot[e] += val
-                else:
-                    spec_tot[e] = val
+
+            xsects[matname] = xsects.get(matname, 0) + xsect
+            for e in spec.keys():
+                spec_tot[e] = spec_tot.get(e, 0) + prefactors * spec.get(e)
 
     sys.stdout.write('\r')
     sys.stdout.write("[%-100s] %d%%" % ('='*int((counter*100)/len(alpha_ene_cdf)), 100*(counter+1)/len(alpha_ene_cdf)))
     sys.stdout.flush()
 
-    print('', file = sys.stdout)
-    # print out total spectrum
-    newspec = spec_tot
     print('',file = constants.ofile)
-
-    rounded_total_xsect = utils.format_float(total_xsect)
-    print('# Total neutron yield = ', rounded_total_xsect, ' n/decay', file = constants.ofile)
+    print('# Total neutron yield = ', utils.format_float(total_xsect), ' n/decay', file = constants.ofile)
 
     for x in sorted(xsects):
-        rounded_xsect = utils.format_float(xsects[x])
-        print('\t',x,rounded_xsect, file = constants.ofile)
+        print('\t', x, utils.format_float(xsects[x]), file = constants.ofile)
 
-    rounded_integral = utils.format_float(integrate(newspec))
-    print('# Integral of spectrum = ', rounded_integral, " n/decay", file = constants.ofile)
-    for e in sorted(newspec):
-        rounded_newspec = utils.format_float(newspec[e])
-        print(e, rounded_newspec, file = constants.ofile)
+    print('# Integral of spectrum = ', utils.format_float(utils.Histogram(spec_tot).integrate()), " n/decay", file = constants.ofile)
+    for e in sorted(spec_tot):
+        print(e, utils.format_float(spec_tot[e]), file = constants.ofile)
 
 def help_message():
     print('Usage: You must specify an alpha list or decay chain file and a target material file.\nYou may also specify a step size to for integrating the alphas as they slow down in MeV; the default value is 0.01 MeV\n\t-l [alpha list file name]\n\t-c [decay chain file name]\n\t-m [material composition file name]\n\t-s [alpha step size in MeV]\n\t-t (to run TALYS for reactions not in libraries)\n\t-d (download isotopic data for isotopes missing from database; default behavior is v2)\n\t\t-d v1 (use V1 database, TALYS-1.6)\n\t-d v2 (use V2 database, TALYS-1.95)\n\t-o [output file name]', file = sys.stdout)
