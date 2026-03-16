@@ -5,6 +5,7 @@ from bisect import bisect
 
 from neucbot import elements
 from neucbot import talys
+from neucbot import utils
 
 N_A = 6.0221409e23
 MeV_to_keV = 1.0e3
@@ -44,14 +45,14 @@ class Isotope:
 
                 # If all three attempts to run TALYS failed, exit early
                 if attempts == 3:
-                    return {}
+                    return utils.Histogram()
             else:
-                return {}
+                return utils.Histogram()
 
         # This should be impossible to reach because the TALYS runner creates
         # all of these directories on instantiation. TODO: verify then remove
         if not os.path.exists(self.talys_runner.output_dir):
-            return {}
+            return utils.Histogram()
 
         spectra_file = open(spectra_file_path)
         spectra = {}
@@ -67,7 +68,7 @@ class Isotope:
 
             spectra[energy] = sigma
 
-        return spectra
+        return utils.Histogram(spectra)
 
     def cross_section(self, alpha_energy):
         rounded_alpha_energy = int(100 * alpha_energy) / 100.0
