@@ -11,7 +11,7 @@ import shutil
 import parseENSDF as ensdf  # type: ignore # pip install sgmllib3k
 import getNaturalIsotopes as gni    # type: ignore 
 import getAbundance as isoabund # type: ignore 
-import matplotlib.pyplot as plt # type: ignore 
+import matplotlib.pyplot as plt # type: ignore # pip install matplotlib
 
 class constants:
     N_A = 6.0221409e+23
@@ -458,13 +458,15 @@ def readTotalNXsectJENDL(e_a, ele, A, MT): # return JENDL XS of (a,n) reaction i
 
     dirname = isoDir(ele, A) + 'JendlOut'
     fname = dirname + '/MT' + str(MT) + '/cross-section' 
+    # fname = dirname + '/MT' + str(MT) + '/cross-section-uncertainty' 
     f = open(fname) 
     lines = [line.split() for line in f.readlines()] 
     sigma = 0
     for line in lines:  # This two 'if's make JENDL-powered neucbot much slower!!!
         if (line[0] != '#'):
             if e_a >= float(line[0]):   
-                sigma = float(line[1])*constants.mb_to_cm2
+                sigma = float(line[1])*constants.mb_to_cm2  # xs
+                # sigma = float(line[2])*constants.mb_to_cm2    # d_xs
                 # break
     f.close()
     return sigma    # XS in cm2
