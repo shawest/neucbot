@@ -118,6 +118,9 @@ class AlphaList:
 
         return condensed_alphas
 
+    def max_alpha(self):
+        return max(self.alphas)
+
 
 class ChainAlphaList(AlphaList):
     CHAIN_LIST_FILE_PATTERN = re.compile(

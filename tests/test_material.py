@@ -245,6 +245,49 @@ class TestComposition(TestCase):
         # 25% stopping power of O = 0.25 * 462.8758
         assert comp.stopping_power(11.0) == 701.5617
 
+    @patch("subprocess.call")
+    @patch("os.listdir", return_value=["data"])
+    def test_download_data_all_data_present(self, mocked_listdir, mocked_call):
+        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
+
+        comp.download_data("v2")
+
+        mocked_listdir.assert_has_calls(
+            [
+                call("./Data/Isotopes/C/C12/TalysOut"),
+                call("./Data/Isotopes/C/C12/NSpectra"),
+                call("./Data/Isotopes/O/O16/TalysOut"),
+                call("./Data/Isotopes/O/O16/NSpectra"),
+                call("./Data/Isotopes/H/H1/TalysOut"),
+                call("./Data/Isotopes/H/H1/NSpectra"),
+            ]
+        )
+
+        mocked_call.assert_has_calls([])
+
+    @patch("subprocess.call")
+    @patch("os.listdir", return_value=[])
+    def test_download_data_missing_data(self, mocked_listdir, mocked_call):
+        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
+
+        comp.download_data("v2")
+
+        mocked_listdir.assert_has_calls(
+            [
+                call("./Data/Isotopes/C/C12/TalysOut"),
+                call("./Data/Isotopes/O/O16/TalysOut"),
+                call("./Data/Isotopes/H/H1/TalysOut"),
+            ]
+        )
+
+        mocked_call.assert_has_calls(
+            [
+                call("./Scripts/download_element_v2.sh C", shell=True),
+                call("./Scripts/download_element_v2.sh O", shell=True),
+                call("./Scripts/download_element_v2.sh H", shell=True),
+            ]
+        )
+
 
 class TestStoppingPowerList(TestCase):
     def test_load_file(self):

@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 
 from bisect import bisect
 
@@ -232,3 +233,17 @@ class Composition:
             total_stopping_power += element_stop_power * fraction
 
         return total_stopping_power
+
+    def download_data(self, version):
+        for material in self.materials:
+            if not (
+                os.listdir(material.talys_output_dir())
+                and os.listdir(material.talys_spectra_dir())
+            ):
+                print(
+                    f"Downloading (datset {version}) data for {material.element.symbol}"
+                )
+                bashcmd = (
+                    f"./Scripts/download_element_{version}.sh {material.element.symbol}"
+                )
+                process = subprocess.call(bashcmd, shell=True)
