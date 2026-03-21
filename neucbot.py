@@ -15,8 +15,6 @@ from neucbot import utils
 
 class constants:
     run_talys  = False
-    download_data = False
-    download_version = 2
     force_recalculation = False
     ofile = sys.stdout
 
