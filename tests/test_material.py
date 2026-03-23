@@ -26,6 +26,9 @@ class TestIsotope(TestCase):
     def test_material_term(self):
         assert self.isotope.material_term() == material.N_A * 1.0 / 13
 
+    def test_name(self):
+        assert self.isotope.name() == "C13"
+
     @patch.object(Runner, "run")
     @patch("os.path.exists", return_value=True)
     def test_differential_n_spec_file_exists(self, mocked_exists, mocked_talys_run):

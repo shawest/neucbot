@@ -27,6 +27,9 @@ class Isotope:
     def material_term(self):
         return (N_A * self.fraction) / self.mass_number
 
+    def name(self):
+        return f"{self.element.symbol}{self.mass_number}"
+
     def differential_n_spec(
         self, alpha_energy, run_talys=False, force_recalculation=False
     ):
