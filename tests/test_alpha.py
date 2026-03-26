@@ -149,6 +149,11 @@ class TestAlphaList(TestCase):
             ],
         )
 
+    def test_max_alpha(self):
+        alpha_list = AlphaList.from_filepath("AlphaLists/Bi212Alphas.dat")
+        alpha_list.load_or_fetch()
+        assert alpha_list.max_alpha() == [6.08988, 27.12]
+
     @patch.object(AlphaList, "write")
     @patch("os.path.isfile")
     def test_load_or_fetch_raises_on_failed_write(self, mocked_isfile, mocked_write):
