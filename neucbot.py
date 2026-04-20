@@ -52,6 +52,7 @@ def main():
     args = parser.parse_args()
 
     cfg = config.Config(vars(args))
+    cfg.validate()
     runner = NeucbotRunner(cfg)
 
     if args.alpha_list:
