@@ -31,6 +31,26 @@ class AlphaList:
         else:
             raise RuntimeError(f"Invalid file path for alphalist {file_path}")
 
+    # This method will be used from the neucbot web client, where alpha lists are
+    # constructed differently than they are from the neucbot CLI. Alphas will be
+    # provided in the request body and can be set directly on the AlphaList object
+    @classmethod
+    def from_json(cls, request_json):
+        alpha_list = cls(request_json["element"], request_json["isotope"])
+        alphas = request_json["alphas"]
+
+        alpha_list.set_alphas(
+            [[alpha, intensity] for alpha, intensity in alphas.items()]
+        )
+
+        return alpha_list
+
+    def get_alphas(self):
+        return self.alphas
+
+    def set_alphas(self, alphas):
+        self.alphas = alphas
+
     def load_or_fetch(self):
         while not os.path.isfile(self.file_path):
             if self.fetch_attempts < 0:
