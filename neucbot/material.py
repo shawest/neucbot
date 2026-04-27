@@ -157,32 +157,25 @@ class Composition:
             if len(material) < 3:
                 continue
 
-            element = elements.Element(material[0])
-            mass_number = int(material[1])
-            fraction = float(material[2])
+            composition.add(
+                {
+                    "element": material[0],
+                    "mass_number": material[1],
+                    "fraction": material[2],
+                }
+            )
 
-            # If a single mass number isn't specified, use all isotopes
-            # along with their natural abundances
-            if mass_number == 0:
-                for isotope in element.isotopes():
-                    composition.add(
-                        Isotope(
-                            element,
-                            isotope,
-                            fraction * element.abundance(isotope) / 100.0,
-                        )
-                    )
+        composition.normalize()
+        composition.populate_stopping_powers()
 
-            # Otherwise, if a single mass number is provided,
-            # use the fraction provided
-            else:
-                composition.add(
-                    Isotope(
-                        element,
-                        mass_number,
-                        fraction / 100.0,
-                    )
-                )
+        return composition
+
+    @classmethod
+    def from_json(cls, request_json):
+        composition = cls()
+
+        for material_element in request_json["elements"]:
+            composition.add(material_element)
 
         composition.normalize()
         composition.populate_stopping_powers()
@@ -220,8 +213,33 @@ class Composition:
     def empty(self):
         return len(self.materials) == 0
 
-    def add(self, material):
-        self.materials.append(material)
+    def add(self, material_element):
+        element = elements.Element(material_element["element"])
+        mass_number = int(material_element["mass_number"])
+        fraction = float(material_element["fraction"])
+
+        # If a single mass number isn't specified, use all isotopes
+        # along with their natural abundances
+        if mass_number == 0:
+            for isotope in element.isotopes():
+                self.materials.append(
+                    Isotope(
+                        element,
+                        isotope,
+                        fraction * element.abundance(isotope) / 100.0,
+                    )
+                )
+
+        # Otherwise, if a single mass number is provided,
+        # use the fraction provided
+        else:
+            self.materials.append(
+                Isotope(
+                    element,
+                    mass_number,
+                    fraction / 100.0,
+                )
+            )
 
     # Expects an alpha energy in units of MeV
     def stopping_power(self, e_alpha):

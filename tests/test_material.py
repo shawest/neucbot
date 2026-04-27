@@ -210,12 +210,44 @@ class TestComposition(TestCase):
         assert comp.fractions.get("H") == pytest.approx(0.25)
         assert comp.fractions.get("O") == pytest.approx(0.25)
 
+    def test_from_json(self):
+        request_json = {
+            "elements": [
+                {"element": "C", "mass_number": "12", "fraction": "33"},
+                {"element": "H", "mass_number": "1", "fraction": "33"},
+                {"element": "O", "mass_number": "16", "fraction": "34"},
+            ]
+        }
+
+        comp = material.Composition.from_json(request_json)
+
+        assert len(comp.materials) == 3
+        assert comp.fractions.get("C") == pytest.approx(0.33)
+        assert comp.fractions.get("H") == pytest.approx(0.33)
+        assert comp.fractions.get("O") == pytest.approx(0.34)
+
+    def test_from_json_no_isotopes_specified(self):
+        request_json = {
+            "elements": [
+                {"element": "C", "mass_number": "0", "fraction": "33"},
+                {"element": "H", "mass_number": "0", "fraction": "33"},
+                {"element": "O", "mass_number": "0", "fraction": "34"},
+            ]
+        }
+
+        comp = material.Composition.from_json(request_json)
+
+        assert len(comp.materials) == 7
+        assert comp.fractions.get("C") == pytest.approx(0.33)
+        assert comp.fractions.get("H") == pytest.approx(0.33)
+        assert comp.fractions.get("O") == pytest.approx(0.34)
+
     def test_normalize(self):
         comp = material.Composition()
 
-        comp.add(material.Isotope(elements.Element("C"), 12, 0.4))
-        comp.add(material.Isotope(elements.Element("H"), 12, 0.2))
-        comp.add(material.Isotope(elements.Element("O"), 12, 0.2))
+        comp.add({"element": "C", "mass_number": 12, "fraction": 0.4})
+        comp.add({"element": "H", "mass_number": 12, "fraction": 0.2})
+        comp.add({"element": "O", "mass_number": 12, "fraction": 0.2})
 
         comp.normalize()
 

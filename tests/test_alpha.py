@@ -104,6 +104,40 @@ class TestAlphaList(TestCase):
             ],
         )
 
+    def test_from_json(self):
+        request_json = {
+            "element": "Bi",
+            "isotope": 212,
+            "alphas": {
+                6.08988: 27.12,
+                6.05078: 69.91,
+                5.768: 1.7,
+                5.626: 0.157,
+                5.607: 1.13,
+                5.481: 0.013,
+                5.345: 0.001,
+                5.302: 0.00011,
+            },
+        }
+
+        alpha_list = AlphaList.from_json(request_json)
+
+        self.assertEqual(alpha_list.element, "Bi")
+        self.assertEqual(alpha_list.isotope, 212)
+        self.assertEqual(
+            alpha_list.alphas,
+            [
+                [6.08988, 27.12],
+                [6.05078, 69.91],
+                [5.768, 1.7],
+                [5.626, 0.157],
+                [5.607, 1.13],
+                [5.481, 0.013],
+                [5.345, 0.001],
+                [5.302, 0.00011],
+            ],
+        )
+
     @patch.object(AlphaList, "write")
     @patch("os.path.isfile")
     def test_load_or_fetch_success(self, mocked_isfile, mocked_write):
