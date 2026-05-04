@@ -51,11 +51,15 @@ class NeucbotRunner:
 
         outputs = {
             "total_neutron_yield": utils.format_float(total_cross_section),
-            "cross_sections": {el: utils.format_float(x) for el, x in cross_sections.items()},
+            "cross_sections": {
+                el: utils.format_float(x) for el, x in cross_sections.items()
+            },
             "spectrum_integral": utils.format_float(
                 utils.Histogram(spec_totals).integrate()
             ),
-            "spectra_totals": {e: utils.format_float(v) for e, v in spec_totals.items()},
+            "spectra_totals": {
+                e: utils.format_float(v) for e, v in spec_totals.items()
+            },
         }
 
         if self.config.json:
@@ -68,14 +72,22 @@ class NeucbotRunner:
         output_file = self.config.output
 
         print("", file=output_file)
-        print("# Total neutron yield = ", outputs["total_neutron_yield"], " n/decay", file=output_file)
+        print(
+            "# Total neutron yield = ",
+            outputs["total_neutron_yield"],
+            " n/decay",
+            file=output_file,
+        )
 
         cross_sections = outputs["cross_sections"]
         for x in sorted(cross_sections):
             print("\t", x, cross_sections[x], file=output_file)
 
         print(
-            "# Integral of spectrum = ", outputs["spectrum_integral"], " n/decay", file=output_file
+            "# Integral of spectrum = ",
+            outputs["spectrum_integral"],
+            " n/decay",
+            file=output_file,
         )
 
         spectra_totals = outputs["spectra_totals"]
