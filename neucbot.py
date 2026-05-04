@@ -48,6 +48,9 @@ def main():
         action="store_true",
         help="Force recalculation of TALYS outputs",
     )
+    parser.add_argument(
+        "--json", action="store_true", help="Return outputs as JSON object"
+    )
 
     args = parser.parse_args()
 

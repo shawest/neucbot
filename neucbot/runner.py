@@ -14,13 +14,19 @@ class NeucbotRunner:
     def run(self, alpha_list, material_composition, step_size=ALPHA_STEP):
         run_talys = self.config.talys
         force_recalc = self.config.force_recalculation
-        print("Running alphas:")
 
         spec_totals = {}
         cross_sections = {}
         total_cross_section = 0
 
-        for [energy, intensity] in tqdm(alpha_list.condense(step_size)):
+        condensed_alpha_list = alpha_list.condense(step_size)
+
+        # If this is not being run as part of a web request, show a progress bar
+        if not self.config.json:
+            print("Running alphas:")
+            condensed_alpha_list = tqdm(condensed_alpha_list)
+
+        for [energy, intensity] in condensed_alpha_list:
             stopping_power = material_composition.stopping_power(energy)
 
             for material in material_composition.materials:
@@ -43,31 +49,47 @@ class NeucbotRunner:
                 for e in spec.keys():
                     spec_totals[e] = spec_totals.get(e, 0) + prefactors * spec.get(e)
 
-        self.print_outputs(total_cross_section, cross_sections, spec_totals)
-
-        return {
-            "total_cross_section": total_cross_section,
-            "cross_sections": cross_sections,
-            "spectra_totals": spec_totals,
+        outputs = {
+            "total_neutron_yield": utils.format_float(total_cross_section),
+            "cross_sections": {
+                el: utils.format_float(x) for el, x in cross_sections.items()
+            },
+            "spectrum_integral": utils.format_float(
+                utils.Histogram(spec_totals).integrate()
+            ),
+            "spectra_totals": {
+                e: utils.format_float(v) for e, v in spec_totals.items()
+            },
         }
 
-    def print_outputs(self, total_cross_section, cross_sections, spectra_totals):
+        if self.config.json:
+            return outputs
+        else:
+            self.print_outputs(outputs)
+            return outputs
+
+    def print_outputs(self, outputs):
         output_file = self.config.output
 
-        rounded_total = utils.format_float(total_cross_section)
-        rounded_integral = utils.format_float(
-            utils.Histogram(spectra_totals).integrate()
+        print("", file=output_file)
+        print(
+            "# Total neutron yield = ",
+            outputs["total_neutron_yield"],
+            " n/decay",
+            file=output_file,
         )
 
-        print("", file=output_file)
-        print("# Total neutron yield = ", rounded_total, " n/decay", file=output_file)
-
+        cross_sections = outputs["cross_sections"]
         for x in sorted(cross_sections):
-            print("\t", x, utils.format_float(cross_sections[x]), file=output_file)
+            print("\t", x, cross_sections[x], file=output_file)
 
         print(
-            "# Integral of spectrum = ", rounded_integral, " n/decay", file=output_file
+            "# Integral of spectrum = ",
+            outputs["spectrum_integral"],
+            " n/decay",
+            file=output_file,
         )
 
+        spectra_totals = outputs["spectra_totals"]
         for e in sorted(spectra_totals):
-            print(e, utils.format_float(spectra_totals[e]), file=output_file)
+            print(e, spectra_totals[e], file=output_file)
