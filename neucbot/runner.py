@@ -14,7 +14,6 @@ class NeucbotRunner:
     def run(self, alpha_list, material_composition, step_size=ALPHA_STEP):
         run_talys = self.config.talys
         force_recalc = self.config.force_recalculation
-        print("Running alphas:")
 
         spec_totals = {}
         cross_sections = {}
@@ -24,6 +23,7 @@ class NeucbotRunner:
 
         # If this is not being run as part of a web request, show a progress bar
         if not self.config.json:
+            print("Running alphas:")
             condensed_alpha_list = tqdm(condensed_alpha_list)
 
         for [energy, intensity] in condensed_alpha_list:
