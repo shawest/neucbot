@@ -10,6 +10,7 @@ class Config:
         self.output = (
             open(args.get("output"), "w") if args.get("output") else sys.stdout
         )
+        self.json = args.get("json")
 
     def validate(self):
         # Return True if TALYS is not being run
