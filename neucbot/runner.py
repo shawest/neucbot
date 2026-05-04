@@ -20,7 +20,13 @@ class NeucbotRunner:
         cross_sections = {}
         total_cross_section = 0
 
-        for [energy, intensity] in tqdm(alpha_list.condense(step_size)):
+        condensed_alpha_list = alpha_list.condense(step_size)
+
+        # If this is not being run as part of a web request, show a progress bar
+        if not self.config.json:
+            condensed_alpha_list = tqdm(condensed_alpha_list)
+
+        for [energy, intensity] in condensed_alpha_list:
             stopping_power = material_composition.stopping_power(energy)
 
             for material in material_composition.materials:
