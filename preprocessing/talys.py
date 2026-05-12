@@ -7,8 +7,8 @@ import shutil
 from neucbot.material import NEUTRON_CROSS_SECTION_PATTERN, mb_to_cm2, MeV_to_keV
 from neucbot.talys import ISOTOPES_DIR
 
-TALYS_OUT_JSON_PATH = "./Data/Preprocessed/TalysOut/"
-TALYS_NSPEC_JSON_PATH = "./Data/Preprocessed/TalysNSpec/"
+TALYS_OUT_JSON_PATH = "./Data/TalysSlim/TalysOut/"
+TALYS_NSPEC_JSON_PATH = "./Data/TalysSlim/NSpec/"
 
 
 class TalysPreprocessor:

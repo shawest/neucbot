@@ -245,9 +245,9 @@ class TestComposition(TestCase):
     def test_normalize(self):
         comp = material.Composition()
 
-        comp.add({"element": "C", "mass_number": 12, "fraction": 0.4})
-        comp.add({"element": "H", "mass_number": 12, "fraction": 0.2})
-        comp.add({"element": "O", "mass_number": 12, "fraction": 0.2})
+        comp.add({"element": "C", "mass_number": "12", "fraction": 0.4})
+        comp.add({"element": "H", "mass_number": "1", "fraction": 0.2})
+        comp.add({"element": "O", "mass_number": "16", "fraction": 0.2})
 
         comp.normalize()
 
