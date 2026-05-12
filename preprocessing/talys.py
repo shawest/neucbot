@@ -4,8 +4,12 @@ import json
 import subprocess
 import shutil
 
-from neucbot.material import NEUTRON_CROSS_SECTION_PATTERN, mb_to_cm2, MeV_to_keV
-from neucbot.talys import ISOTOPES_DIR
+from neucbot.data.raw_talys import (
+    ISOTOPES_DIR,
+    NEUTRON_CROSS_SECTION_PATTERN,
+    mb_to_cm2,
+    MeV_to_keV,
+)
 
 TALYS_OUT_JSON_PATH = "./Data/TalysSlim/TalysOut/"
 TALYS_NSPEC_JSON_PATH = "./Data/TalysSlim/NSpec/"
