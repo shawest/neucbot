@@ -78,7 +78,7 @@ class TalysPreprocessor:
         return os.path.join(self.base_dir, f"{self.element}{mass_number}", "TalysOut")
 
     def talys_nspec_dir(self, mass_number):
-        return os.path.join(self.base_dir, f"{self.element}{mass_number}", "Nspectra")
+        return os.path.join(self.base_dir, f"{self.element}{mass_number}", "NSpectra")
 
     # Preprocessing methods
     def process_talys_nspec(self, mass_number):

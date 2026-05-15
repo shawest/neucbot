@@ -7,7 +7,8 @@ from bisect import bisect
 from neucbot import elements
 from neucbot import utils
 
-from neucbot.data.raw_talys import RawTalysDataSource
+from neucbot.data.raw_talys import RawTalysDataSource as TalysRaw
+from neucbot.data.slim_talys import TalysSlimDataSource as TalysSlim
 
 N_A = 6.0221409e23
 
@@ -18,7 +19,7 @@ class Isotope:
         self.element = element
         self.mass_number = int(mass_number)
         self.fraction = float(fraction)
-        self.data_source = RawTalysDataSource(self.element.symbol, self.mass_number)
+        self.data_source = TalysRaw(self.element.symbol, self.mass_number)
 
     def material_term(self):
         return (N_A * self.fraction) / self.mass_number
