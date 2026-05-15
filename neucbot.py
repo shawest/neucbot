@@ -20,7 +20,9 @@ def main():
 
     alpha_list.load_or_fetch()
 
-    material_composition = material.Composition.from_file(args.material)
+    material_composition = material.Composition.from_file(
+        args.material, cfg.data_source_class
+    )
 
     if args.print_alphas or args.print_alphas_only:
         print("Alpha List: ")

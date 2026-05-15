@@ -17,7 +17,7 @@ class NeucbotDataSource(ABC):
         pass
 
     @abstractmethod
-    def download_data(self):
+    def download_data(self, version):
         pass
 
     @abstractmethod

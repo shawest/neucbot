@@ -25,7 +25,8 @@ argparser.add_argument(
 # 1. Alpha step size
 # 2. Run talys during calculations
 # 3. Force recalculation for talys
-# 4. Download missing TALYS data
+# 4. Download missing data
+# 5. Data source to use during calculations
 ####################
 argparser.add_argument(
     "-s",
@@ -53,6 +54,13 @@ argparser.add_argument(
     "--download",
     choices=["v1", "v2"],
     help="Download isotopic data for isotopes missing from database (options: %(choices)s)",
+)
+
+argparser.add_argument(
+    "--data-source",
+    choices=["talys-raw", "talys-slim"],
+    default="talys-slim",
+    help="Dataset used during neucbot calculations (options: %(choices)s)",
 )
 
 ###########################
