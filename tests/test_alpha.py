@@ -289,7 +289,6 @@ class TestChainAlphaList(TestCase):
         )
 
     def test_condense(self):
-        pass
         chain_list = ChainAlphaList.from_filepath("Chains/Th232Chain.dat")
         chain_list.load_or_fetch()
 

@@ -7,19 +7,16 @@ from bisect import bisect
 from neucbot import elements
 from neucbot import utils
 
-from neucbot.data.raw_talys import RawTalysDataSource as TalysRaw
-from neucbot.data.slim_talys import TalysSlimDataSource as TalysSlim
-
 N_A = 6.0221409e23
 
 
 class Isotope:
     # self.fraction should be a number between 0 and 1
-    def __init__(self, element, mass_number, fraction):
+    def __init__(self, element, mass_number, fraction, data_source_class):
         self.element = element
         self.mass_number = int(mass_number)
         self.fraction = float(fraction)
-        self.data_source = TalysRaw(self.element.symbol, self.mass_number)
+        self.data_source = data_source_class(element.symbol, mass_number)
 
     def material_term(self):
         return (N_A * self.fraction) / self.mass_number
@@ -44,8 +41,8 @@ class Isotope:
         rounded_alpha_energy = int(100 * alpha_energy) / 100.0
         return self.data_source.cross_section(rounded_alpha_energy)
 
-    def download_data(self):
-        self.data_source.download_data()
+    def download_data(self, version=None):
+        self.data_source.download_data(version)
 
 
 class StoppingPowerList:
@@ -95,10 +92,10 @@ class StoppingPowerList:
 
 class Composition:
     @classmethod
-    def from_file(cls, file_path):
+    def from_file(cls, file_path, data_source_class):
         file = open(file_path)
 
-        composition = cls()
+        composition = cls(data_source_class)
 
         for material in [
             line.split() for line in file.readlines() if not line.startswith("#")
@@ -120,8 +117,8 @@ class Composition:
         return composition
 
     @classmethod
-    def from_json(cls, request_json):
-        composition = cls()
+    def from_json(cls, request_json, data_source_class):
+        composition = cls(data_source_class)
 
         for material_element in request_json["elements"]:
             composition.add(material_element)
@@ -131,7 +128,8 @@ class Composition:
 
         return composition
 
-    def __init__(self):
+    def __init__(self, data_source_class):
+        self.data_source_class = data_source_class
         self.materials = []
         self.fractions = {}
         self.stopping_powers = {}
@@ -176,6 +174,7 @@ class Composition:
                         element,
                         isotope,
                         fraction * element.abundance(isotope) / 100.0,
+                        self.data_source_class,
                     )
                 )
 
@@ -183,11 +182,7 @@ class Composition:
         # use the fraction provided
         else:
             self.materials.append(
-                Isotope(
-                    element,
-                    mass_number,
-                    fraction / 100.0,
-                )
+                Isotope(element, mass_number, fraction / 100.0, self.data_source_class)
             )
 
     # Expects an alpha energy in units of MeV
@@ -201,6 +196,6 @@ class Composition:
 
         return total_stopping_power
 
-    def download_data(self, version):
+    def download_data(self, version=None):
         for material in self.materials:
-            material.download_data()
+            material.download_data(version)

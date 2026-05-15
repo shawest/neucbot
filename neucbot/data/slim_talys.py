@@ -32,7 +32,7 @@ class TalysSlimDataSource(NeucbotDataSource):
         spectra = self.talys_nspec.get(rounded_alpha_energy, {})
         return utils.Histogram(spectra)
 
-    def download_data(self):
+    def download_data(self, version=None):
         if os.path.exists(self.base_dir) and os.listdir(self.base_dir):
             return
 

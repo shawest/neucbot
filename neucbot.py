@@ -20,7 +20,9 @@ def main():
 
     alpha_list.load_or_fetch()
 
-    material_composition = material.Composition.from_file(args.material)
+    material_composition = material.Composition.from_file(
+        args.material, cfg.data_source_class
+    )
 
     if args.print_alphas or args.print_alphas_only:
         print("Alpha List: ")
@@ -31,8 +33,8 @@ def main():
         if args.print_alphas_only:
             return
 
-    if args.download:
-        material_composition.download_data(args.download)
+    # Download checks will only download data if it is missing
+    material_composition.download_data(args.download)
 
     runner.run(alpha_list, material_composition, args.step_size)
 

@@ -5,11 +5,13 @@ from unittest.mock import call, mock_open, patch
 
 from neucbot import elements, material
 
+from tests.helpers import MockDataSource
+
 
 class TestIsotope(TestCase):
     def setUp(self):
         carbon = elements.Element("C")
-        self.isotope = material.Isotope(carbon, 13, 1.0)
+        self.isotope = material.Isotope(carbon, 13, 1.0, MockDataSource)
 
     def test_material_term(self):
         assert self.isotope.material_term() == material.N_A * 1.0 / 13
@@ -17,18 +19,13 @@ class TestIsotope(TestCase):
     def test_name(self):
         assert self.isotope.name() == "C13"
 
-    @patch(
-        "neucbot.data.raw_talys.RawTalysDataSource.allows_talys_calculation",
-        return_value=False,
-    )
+    @patch.object(MockDataSource, "allows_talys_calculation", return_value=False)
     def test_differential_n_spec_no_talys(self, mock_talys_allowed):
-        pass
+        self.isotope.differential_n_spec(1.05)
+        mock_talys_allowed.assert_has_calls([call()])
 
-    @patch("neucbot.data.raw_talys.RawTalysDataSource.run_talys")
-    @patch(
-        "neucbot.data.raw_talys.RawTalysDataSource.allows_talys_calculation",
-        return_value=True,
-    )
+    @patch.object(MockDataSource, "run_talys")
+    @patch.object(MockDataSource, "allows_talys_calculation", return_value=True)
     def test_differential_n_spec_force_recalculation(
         self, mock_talys_allowed, mock_talys
     ):
@@ -36,11 +33,8 @@ class TestIsotope(TestCase):
         mock_talys_allowed.assert_has_calls([call()])
         mock_talys.assert_has_calls([call(1.05)])
 
-    @patch("neucbot.data.raw_talys.RawTalysDataSource.run_talys_with_retries")
-    @patch(
-        "neucbot.data.raw_talys.RawTalysDataSource.allows_talys_calculation",
-        return_value=True,
-    )
+    @patch.object(MockDataSource, "run_talys_with_retries")
+    @patch.object(MockDataSource, "allows_talys_calculation", return_value=True)
     def test_differential_n_spec_talys_allowed_and_run(
         self, mock_talys_allowed, mock_talys
     ):
@@ -48,10 +42,7 @@ class TestIsotope(TestCase):
         mock_talys_allowed.assert_has_calls([call()])
         mock_talys.assert_has_calls([call(1.05)])
 
-    @patch(
-        "neucbot.data.raw_talys.RawTalysDataSource.cross_section",
-        return_value=1.51335e-28,
-    )
+    @patch.object(MockDataSource, "cross_section", return_value=1.51335e-28)
     def test_cross_section(self, mock_cross_section):
         assert self.isotope.cross_section(1.05000002) == 1.51335e-28
         mock_cross_section.assert_has_calls([call(1.05)])
@@ -59,7 +50,9 @@ class TestIsotope(TestCase):
 
 class TestComposition(TestCase):
     def test_from_file_isotopes_specified(self):
-        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
+        comp = material.Composition.from_file(
+            "./tests/test_material/WithIsotopes.dat", MockDataSource
+        )
 
         assert len(comp.materials) == 3
         assert comp.fractions.get("C") == pytest.approx(0.5)
@@ -67,7 +60,9 @@ class TestComposition(TestCase):
         assert comp.fractions.get("O") == pytest.approx(0.25)
 
     def test_from_file_no_isotopes_specified(self):
-        comp = material.Composition.from_file("./tests/test_material/NoIsotopes.dat")
+        comp = material.Composition.from_file(
+            "./tests/test_material/NoIsotopes.dat", MockDataSource
+        )
 
         assert len(comp.materials) == 7
         assert comp.fractions.get("C") == pytest.approx(0.5)
@@ -83,7 +78,7 @@ class TestComposition(TestCase):
             ]
         }
 
-        comp = material.Composition.from_json(request_json)
+        comp = material.Composition.from_json(request_json, MockDataSource)
 
         assert len(comp.materials) == 3
         assert comp.fractions.get("C") == pytest.approx(0.33)
@@ -99,7 +94,7 @@ class TestComposition(TestCase):
             ]
         }
 
-        comp = material.Composition.from_json(request_json)
+        comp = material.Composition.from_json(request_json, MockDataSource)
 
         assert len(comp.materials) == 7
         assert comp.fractions.get("C") == pytest.approx(0.33)
@@ -107,7 +102,7 @@ class TestComposition(TestCase):
         assert comp.fractions.get("O") == pytest.approx(0.34)
 
     def test_normalize(self):
-        comp = material.Composition()
+        comp = material.Composition(MockDataSource)
 
         comp.add({"element": "C", "mass_number": "12", "fraction": 0.4})
         comp.add({"element": "H", "mass_number": "1", "fraction": 0.2})
@@ -120,7 +115,9 @@ class TestComposition(TestCase):
         assert comp.fractions.get("O") == pytest.approx(0.25)
 
     def test_stopping_power_single_element_material(self):
-        comp = material.Composition.from_file("./tests/test_material/CarbonOnly.dat")
+        comp = material.Composition.from_file(
+            "./tests/test_material/CarbonOnly.dat", MockDataSource
+        )
         assert len(comp.materials) == 1
         assert comp.fractions == {"C": 1.0}
 
@@ -129,7 +126,9 @@ class TestComposition(TestCase):
         assert comp.stopping_power(11.0) == 486.0835
 
     def test_stopping_power_multi_element_material(self):
-        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
+        comp = material.Composition.from_file(
+            "./tests/test_material/WithIsotopes.dat", MockDataSource
+        )
 
         assert len(comp.materials) == 3
         assert comp.fractions.get("C") == pytest.approx(0.5)
@@ -141,48 +140,16 @@ class TestComposition(TestCase):
         # 25% stopping power of O = 0.25 * 462.8758
         assert comp.stopping_power(11.0) == 701.5617
 
-    @patch("subprocess.call")
-    @patch("os.listdir", return_value=["data"])
-    def test_download_data_all_data_present(self, mocked_listdir, mocked_call):
-        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
-
-        comp.download_data("v2")
-
-        mocked_listdir.assert_has_calls(
-            [
-                call("./Data/Isotopes/C/C12/TalysOut"),
-                call("./Data/Isotopes/C/C12/NSpectra"),
-                call("./Data/Isotopes/O/O16/TalysOut"),
-                call("./Data/Isotopes/O/O16/NSpectra"),
-                call("./Data/Isotopes/H/H1/TalysOut"),
-                call("./Data/Isotopes/H/H1/NSpectra"),
-            ]
+    @patch.object(MockDataSource, "download_data")
+    def test_download_data(self, mocked_download_data):
+        comp = material.Composition.from_file(
+            "./tests/test_material/WithIsotopes.dat", MockDataSource
         )
 
-        mocked_call.assert_has_calls([])
+        comp.download_data()
 
-    @patch("subprocess.call")
-    @patch("os.listdir", return_value=[])
-    def test_download_data_missing_data(self, mocked_listdir, mocked_call):
-        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
-
-        comp.download_data("v2")
-
-        mocked_listdir.assert_has_calls(
-            [
-                call("./Data/Isotopes/C/C12/TalysOut"),
-                call("./Data/Isotopes/O/O16/TalysOut"),
-                call("./Data/Isotopes/H/H1/TalysOut"),
-            ]
-        )
-
-        mocked_call.assert_has_calls(
-            [
-                call("./Scripts/download_element_v2.sh C", shell=True),
-                call("./Scripts/download_element_v2.sh O", shell=True),
-                call("./Scripts/download_element_v2.sh H", shell=True),
-            ]
-        )
+        # Each #download_data on the isotopes is called, for a total of 3
+        mocked_download_data.assert_has_calls([call(None), call(None), call(None)])
 
 
 class TestStoppingPowerList(TestCase):

@@ -7,6 +7,8 @@ import numpy
 
 from neucbot import alpha, config, material, runner, utils
 
+from tests.helpers import MockDataSource
+
 
 class TestNeucbotRunner(TestCase):
     @patch.object(material.Isotope, "cross_section", return_value=1e-27)
@@ -24,7 +26,9 @@ class TestNeucbotRunner(TestCase):
         alpha_list = alpha.AlphaList.from_filepath("AlphaLists/Bi212Alphas.dat")
         alpha_list.load_or_fetch()
 
-        comp = material.Composition.from_file("./tests/test_material/WithIsotopes.dat")
+        comp = material.Composition.from_file(
+            "./tests/test_material/WithIsotopes.dat", MockDataSource
+        )
 
         expected = {
             "cross_sections": {
