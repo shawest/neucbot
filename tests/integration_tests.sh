@@ -30,6 +30,66 @@ else
   rm tmp-acrylic-th232-chain.txt
 fi
 
+##################
+# U235 ChainList #
+##################
+
+echo
+echo "Running test..."
+echo "---------------------"
+echo "Materials/Acrylic.dat"
+echo "Chains/U235Chain.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -c Chains/U235Chain.dat -o tmp-acrylic-u235-chain.txt
+diff tmp-acrylic-u235-chain.txt tests/integration_tests/acrylic-u235-chain.txt
+
+# If the previous diff command generated any differences, the exit code will be 1
+# and this will be considered a test failure.
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-u235-chain.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-u235-chain.txt
+fi
+
+##################
+# U238 ChainList #
+##################
+
+echo
+echo "Running test..."
+echo "---------------------"
+echo "Materials/Acrylic.dat"
+echo "Chains/U238Chain.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -c Chains/U238lowerChain.dat -o tmp-acrylic-u238-chain.txt
+diff tmp-acrylic-u238-chain.txt tests/integration_tests/acrylic-u238-chain.txt
+
+# If the previous diff command generated any differences, the exit code will be 1
+# and this will be considered a test failure.
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-u238-chain.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-u238-chain.txt
+fi
+
 ###################
 # Rn220 AlphaList #
 ###################
