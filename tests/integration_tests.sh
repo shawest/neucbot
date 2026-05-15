@@ -11,7 +11,7 @@ echo "Materials/Acrylic.dat"
 echo "Chains/Th232Chain.dat"
 echo
 
-python3 ./neucbot.py -m Materials/Acrylic.dat -c Chains/Th232Chain.dat -d v2 -o tmp-acrylic-th232-chain.txt
+python3 ./neucbot.py -m Materials/Acrylic.dat -c Chains/Th232Chain.dat -o tmp-acrylic-th232-chain.txt
 diff tmp-acrylic-th232-chain.txt tests/integration_tests/acrylic-th232-chain.txt
 
 # If the previous diff command generated any differences, the exit code will be 1
@@ -41,7 +41,7 @@ echo "Materials/Acrylic.dat"
 echo "AlphaLists/Rn220Alphas.dat"
 echo
 
-python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Rn220Alphas.dat -d v2 -o tmp-acrylic-rn220-alphalist.txt
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Rn220Alphas.dat -o tmp-acrylic-rn220-alphalist.txt
 diff tmp-acrylic-rn220-alphalist.txt tests/integration_tests/acrylic-rn220-alphalist.txt
 
 if [ $? -eq 1 ]; then
@@ -69,7 +69,36 @@ echo "Materials/Acrylic.dat"
 echo "AlphaLists/Bi212Alphas.dat"
 echo
 
-python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2 -o tmp-acrylic-bi212-alphalist.txt
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -o tmp-acrylic-bi212-alphalist.txt
+diff tmp-acrylic-bi212-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
+
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-bi212-alphalist.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-bi212-alphalist.txt
+fi
+
+##############################
+# Bi212 AlphaList - Raw Data #
+##############################
+
+echo
+echo "Running test with raw data..."
+echo "-----------------------------"
+echo "Materials/Acrylic.dat"
+echo "AlphaLists/Bi212Alphas.dat"
+echo "DATA SOURCE: talys-raw"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2 -o tmp-acrylic-bi212-alphalist.txt --data-source talys-raw
 diff tmp-acrylic-bi212-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
 
 if [ $? -eq 1 ]; then
@@ -95,6 +124,7 @@ fi
 # echo "--------------------------"
 # echo "Materials/Acrylic.dat"
 # echo "AlphaLists/Bi212Alphas.dat"
+# echo "DATA SOURCE: talys-raw"
 # echo
 
 # echo "Removing subset of TALYS files..."
@@ -102,13 +132,13 @@ fi
 # rm Data/Isotopes/C/C12/NSpectra/nspec000.0*
 
 # echo "Running neucbot.py with -t enabled..."
-# python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2  -t
+# python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2  -t --data-source talys-raw
 
 # # Since ./neucbot.py prints TALYS information when it is enabled, the output file won't be exactly the same.
 # # The run above downloads the missing files from TALYS and this subsequent run
 # # verifies the output.
 # echo "Running neucbot.py to verify successful TALYS download..."
-# python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2 -o tmp-acrylic-bi212-alphalist.txt
+# python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -d v2 -o tmp-acrylic-bi212-alphalist.txt --data-source talys-raw
 # diff tmp-acrylic-bi212-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
 
 # if [ $? -eq 1 ]; then
