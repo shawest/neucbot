@@ -33,8 +33,8 @@ def main():
         if args.print_alphas_only:
             return
 
-    if args.download:
-        material_composition.download_data(args.download)
+    # Download checks will only download data if it is missing
+    material_composition.download_data(args.download)
 
     runner.run(alpha_list, material_composition, args.step_size)
 
