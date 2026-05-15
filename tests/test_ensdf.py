@@ -222,3 +222,7 @@ class TestParser(TestCase):
     def test_is_ground_state_decay_success(self):
         parent_record = "212BI  P 0.0          1(-)              60.55 M  6              6207.26   3"
         assert Parser.is_ground_state_decay(parent_record) == True
+
+    def test_is_ground_state_decay_success_shorter_isotope(self):
+        parent_record = "235U   P 0.0         7/2-              7.04E+8 Y 1              4678.1    7"
+        assert Parser.is_ground_state_decay(parent_record) == True

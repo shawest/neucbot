@@ -144,18 +144,19 @@ class AlphaList:
 
 class ChainAlphaList(AlphaList):
     CHAIN_LIST_FILE_PATTERN = re.compile(
-        r"^Chains\/(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3})Chain.dat"
+        r"^Chains\/(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3}).*Chain.dat"
     )
     CHAIN_LIST_LINE_PATTERN = re.compile(
         r"^(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3})\s+(?P<branch_frac>[\d\.]+)$"
     )
 
-    def __init__(self, element, isotope):
-        self.element = element
-        self.isotope = isotope
-        self.file_path = f"{CHAIN_LIST_DIR}/{self.element}{self.isotope}Chain.dat"
+    def __init__(self, element, isotope, file_path=""):
+        super().__init__(element, isotope)
+
+        self.file_path = (
+            file_path or f"{CHAIN_LIST_DIR}/{self.element}{self.isotope}Chain.dat"
+        )
         self._alpha_lists = []
-        self.alphas = []
 
     @classmethod
     def from_filepath(cls, file_path):
@@ -163,7 +164,7 @@ class ChainAlphaList(AlphaList):
             element = chain_file_match.group("element")
             isotope = chain_file_match.group("isotope")
 
-            return cls(element, isotope)
+            return cls(element, isotope, file_path)
         else:
             raise RuntimeError(f"Invalid file path for chain alpha list {file_path}")
 
