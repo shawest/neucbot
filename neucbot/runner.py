@@ -1,7 +1,6 @@
 from tqdm import tqdm
 from neucbot import alpha
 from neucbot import config
-from neucbot import talys
 from neucbot import utils
 
 ALPHA_STEP = 0.01  # MeV

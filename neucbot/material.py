@@ -5,16 +5,11 @@ import subprocess
 from bisect import bisect
 
 from neucbot import elements
-from neucbot import talys
 from neucbot import utils
 
-N_A = 6.0221409e23
-MeV_to_keV = 1.0e3
-mb_to_cm2 = 1.0e-27
+from neucbot.data.raw_talys import RawTalysDataSource
 
-NEUTRON_CROSS_SECTION_PATTERN = re.compile(
-    r"2. Binary non-elastic cross sections .non-exclusive.\n\n\s+gamma.*\n\s+neutron = (?P<cross_section>\d\.\d{5}E[\+\-]\d{2})"
-)
+N_A = 6.0221409e23
 
 
 class Isotope:
@@ -23,7 +18,7 @@ class Isotope:
         self.element = element
         self.mass_number = int(mass_number)
         self.fraction = float(fraction)
-        self.talys_runner = talys.Runner(self.element.symbol, self.mass_number)
+        self.data_source = RawTalysDataSource(self.element.symbol, self.mass_number)
 
     def material_term(self):
         return (N_A * self.fraction) / self.mass_number
@@ -36,67 +31,20 @@ class Isotope:
     ):
         rounded_alpha_energy = int(100 * alpha_energy) / 100.0
 
-        if force_recalculation:
-            self.talys_runner.run(rounded_alpha_energy)
+        if self.data_source.allows_talys_calculation():
+            if force_recalculation:
+                self.data_source.run_talys(rounded_alpha_energy)
+            elif run_talys:
+                self.data_source.run_talys_with_retries(rounded_alpha_energy)
 
-        spectra_file_path = self.talys_runner.spectra_file(rounded_alpha_energy)
-        if not os.path.exists(spectra_file_path):
-            if run_talys:
-                attempts = 0
-                while attempts < 3 and not os.path.exists(spectra_file_path):
-                    self.talys_runner.run(rounded_alpha_energy)
-                    attempts += 1
-
-                # If all three attempts to run TALYS failed, exit early
-                if attempts == 3:
-                    return utils.Histogram()
-            else:
-                return utils.Histogram()
-
-        # This should be impossible to reach because the TALYS runner creates
-        # all of these directories on instantiation. TODO: verify then remove
-        if not os.path.exists(self.talys_runner.output_dir):
-            return utils.Histogram()
-
-        spectra_file = open(spectra_file_path)
-        spectra = {}
-
-        for spec in [line.split() for line in spectra_file.readlines()]:
-            if spec == [] or spec[0] == "EMPTY":
-                break
-            elif spec[0][0] == "#":
-                continue
-
-            energy = int(float(spec[0]) * MeV_to_keV)
-            sigma = float(spec[1]) * mb_to_cm2 / MeV_to_keV
-
-            spectra[energy] = sigma
-
-        return utils.Histogram(spectra)
+        return self.data_source.nspectra(rounded_alpha_energy)
 
     def cross_section(self, alpha_energy):
         rounded_alpha_energy = int(100 * alpha_energy) / 100.0
+        return self.data_source.cross_section(rounded_alpha_energy)
 
-        output_file_path = self.talys_runner.output_file(rounded_alpha_energy)
-
-        if not os.path.exists(output_file_path):
-            return 0
-
-        with open(output_file_path, "r") as output_file:
-            file_text = output_file.read()
-
-        if cross_section_match := re.search(NEUTRON_CROSS_SECTION_PATTERN, file_text):
-            cross_section = float(cross_section_match.group("cross_section"))
-
-            return cross_section * mb_to_cm2
-        else:
-            return 0
-
-    def talys_spectra_dir(self):
-        return self.talys_runner.talys_spectra_dir()
-
-    def talys_output_dir(self):
-        return self.talys_runner.talys_output_dir()
+    def download_data(self):
+        self.data_source.download_data()
 
 
 class StoppingPowerList:
@@ -254,14 +202,4 @@ class Composition:
 
     def download_data(self, version):
         for material in self.materials:
-            if not (
-                os.listdir(material.talys_output_dir())
-                and os.listdir(material.talys_spectra_dir())
-            ):
-                print(
-                    f"Downloading (datset {version}) data for {material.element.symbol}"
-                )
-                bashcmd = (
-                    f"./Scripts/download_element_{version}.sh {material.element.symbol}"
-                )
-                process = subprocess.call(bashcmd, shell=True)
+            material.download_data()
