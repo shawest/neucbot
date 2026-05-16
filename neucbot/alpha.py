@@ -143,9 +143,8 @@ class AlphaList:
 
 
 class ChainAlphaList(AlphaList):
-    CHAIN_LIST_FILE_PATTERN = re.compile(
-        r"^Chains\/(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3}).*Chain.dat"
-    )
+    ISOTOPE_PATTERN = re.compile(r"^(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3})")
+
     CHAIN_LIST_LINE_PATTERN = re.compile(
         r"^(?P<element>[A-Za-z]{1,2})(?P<isotope>\d{1,3})\s+(?P<branch_frac>[\d\.]+)$"
     )
@@ -160,13 +159,21 @@ class ChainAlphaList(AlphaList):
 
     @classmethod
     def from_filepath(cls, file_path):
-        if chain_file_match := cls.CHAIN_LIST_FILE_PATTERN.match(file_path):
-            element = chain_file_match.group("element")
-            isotope = chain_file_match.group("isotope")
-
-            return cls(element, isotope, file_path)
-        else:
+        if not os.path.exists(file_path):
             raise RuntimeError(f"Invalid file path for chain alpha list {file_path}")
+
+        with open(file_path, "r") as chain_file:
+            for line in chain_file:
+                if line[0] == "#":
+                    continue
+
+                if iso_match := cls.ISOTOPE_PATTERN.match(line):
+                    element = iso_match.group("element")
+                    isotope = iso_match.group("isotope")
+
+                    return cls(element, isotope, file_path)
+
+        raise RuntimeError(f"Could not extract start of decay chain at {file_path}")
 
     def load_or_fetch(self):
         # Read in chain file list line by line, splitting into:
