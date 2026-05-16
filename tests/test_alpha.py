@@ -234,6 +234,12 @@ class TestChainAlphaList(TestCase):
         assert chain_list.element == "Th"
         assert chain_list.isotope == "232"
 
+        chain_list = ChainAlphaList.from_filepath("Chains/U238lowerChain.dat")
+
+        assert chain_list.element == "Ra"
+        assert chain_list.isotope == "226"
+        assert chain_list.file_path == "Chains/U238lowerChain.dat"
+
     def test_from_filepath_error_invalid_filepath(self):
         with self.assertRaisesRegex(
             RuntimeError, r"Invalid file path for chain alpha list"

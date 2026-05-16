@@ -111,25 +111,27 @@ class Parser:
     # Pattern of Parent Record for Ground State Decay is:
     # "(5-character nuclear ID)  P (0.0 + whitespace)"
     # ENSDF Manual, page 17
-    GROUND_STATE_DECAY_RECORD = re.compile(r"^[A-Z0-9]{5}\s{2}P\s([0\.\s]){10}")
+    GROUND_STATE_DECAY_RECORD = re.compile(r"^[A-Z0-9]{2,5}\s{2,5}P\s([0\.\s]){10}")
 
     # Pattern of Intensity is:
     # "(5-character nuclear ID)  N (Intensity [up to 10 digits])"
     # ENSDF Manual, page 18-19
-    INTENSITY_RECORD = re.compile(r"^[A-Z0-9]{5}\s{2}N\s(?P<intensity>[0-9\.\s]{10})")
+    INTENSITY_RECORD = re.compile(
+        r"^[A-Z0-9]{2,5}\s{2,5}N\s(?P<intensity>[0-9\.\s]{10})"
+    )
 
     # Pattern of Alpha energies is:
     # "(5-character nuclear ID)  A (Energy [up to 10 digits]) (Uncertainty Energy) (Intensity) (Uncertainty intensity)"
     # ENSDF Manual, page 25
     ALPHA_RECORD = re.compile(
-        r"^[A-Z0-9]{5}\s{2}A\s(?P<energy>[0-9\s\.]{10})[0-9\.\s]{2}(?P<intensity>[0-9\.\-E\s]{8})"
+        r"^[A-Z0-9]{2,5}\s{2,5}A\s(?P<energy>[0-9\s\.]{10})[0-9\.\s]{2}(?P<intensity>[0-9\.\-E\s]{8})"
     )
 
     # Pattern of Gamma energies is:
     # "(5-character nuclear ID)  G (Energy [up to 10 digits]) (Uncertainty Energy) (Intensity) (Uncertainty intensity)"
     # ENSDF Manual, page 28
     GAMMA_RECORD = re.compile(
-        r"^[A-Z0-9]{5}\s{2}G\s(?P<energy>[0-9\s\.]{10})[0-9\.\s]{2}(?P<intensity>[0-9\.\-E\s]{8})"
+        r"^[A-Z0-9]{2,5}\s{2,5}G\s(?P<energy>[0-9\s\.]{10})[0-9\.\s]{2}(?P<intensity>[0-9\.\-E\s]{8})"
     )
 
     @classmethod
