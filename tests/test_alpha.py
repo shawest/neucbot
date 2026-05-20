@@ -105,25 +105,19 @@ class TestAlphaList(TestCase):
         )
 
     def test_from_json(self):
-        request_json = {
-            "element": "Bi",
-            "isotope": 212,
-            "alphas": {
-                6.08988: 27.12,
-                6.05078: 69.91,
-                5.768: 1.7,
-                5.626: 0.157,
-                5.607: 1.13,
-                5.481: 0.013,
-                5.345: 0.001,
-                5.302: 0.00011,
-            },
+        request_alphas = {
+            6.08988: 27.12,
+            6.05078: 69.91,
+            5.768: 1.7,
+            5.626: 0.157,
+            5.607: 1.13,
+            5.481: 0.013,
+            5.345: 0.001,
+            5.302: 0.00011,
         }
 
-        alpha_list = AlphaList.from_json(request_json)
+        alpha_list = AlphaList.from_json(request_alphas)
 
-        self.assertEqual(alpha_list.element, "Bi")
-        self.assertEqual(alpha_list.isotope, 212)
         self.assertEqual(
             alpha_list.alphas,
             [
@@ -304,3 +298,59 @@ class TestChainAlphaList(TestCase):
         assert condensed_list[0] == [approx(8.78), approx(64.06)]
         assert condensed_list[1] == [approx(8.78), approx(64.06)]
         assert condensed_list[878] == [approx(0.01), approx(600.0399365339999)]
+
+    def test_from_json(self):
+        request_chain = {
+            "Th232": 100,
+            "Th228": 100,
+            "Ra224": 100,
+            "Rn220": 100,
+            "Po216": 100,
+            "Bi212": 35.94,
+            "Po212": 64.06,
+        }
+
+        chain_list = ChainAlphaList.from_json(request_chain)
+
+        self.assertEqual(
+            chain_list.alphas,
+            [
+                # Th232 Alphas
+                [4.0123, 78.2],
+                [3.9471999999999996, 21.7],
+                [3.8110999999999997, 0.069],
+                # Th228 Alphas
+                [5.42315, 73.4],
+                [5.3403599999999996, 26.0],
+                [5.211, 0.408],
+                [5.173, 0.218],
+                [5.138, 0.036],
+                [4.99, 1e-05],
+                [4.944, 2.4e-05],
+                [4.507, 1.7e-05],
+                [4.43, 4.6e-06],
+                # Ra224 Alphas
+                [5.68537, 94.92],
+                [5.448600000000001, 5.06],
+                [5.161, 0.0071],
+                [5.051, 0.0076],
+                [5.034, 0.003],
+                # Rn220 Alphas
+                [6.28808, 99.886],
+                [5.747, 0.114],
+                # Po216 Alphas
+                [6.7783, 99.9981],
+                [5.985, 0.0019],
+                # Bi212 Alphas (multiplied by branching fraction .3594)
+                [6.08988, 9.746928],
+                [6.05078, 25.125653999999997],
+                [5.768, 0.61098],
+                [5.626, 0.0564258],
+                [5.607, 0.406122],
+                [5.481, 0.0046722],
+                [5.345, 0.0003594],
+                [5.302, 3.9534e-05],
+                # Po212 Alphas (multiplied by branching fraction .6406
+                [8.78486, 64.06],
+            ],
+        )

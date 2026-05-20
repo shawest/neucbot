@@ -35,12 +35,10 @@ class AlphaList:
     # constructed differently than they are from the neucbot CLI. Alphas will be
     # provided in the request body and can be set directly on the AlphaList object
     @classmethod
-    def from_json(cls, request_json):
-        alpha_list = cls(request_json["element"], request_json["isotope"])
-        alphas = request_json["alphas"]
-
+    def from_json(cls, alphas_json):
+        alpha_list = cls("", "")
         alpha_list.set_alphas(
-            [[alpha, intensity] for alpha, intensity in alphas.items()]
+            [[alpha, intensity] for alpha, intensity in alphas_json.items()]
         )
 
         return alpha_list
@@ -198,3 +196,20 @@ class ChainAlphaList(AlphaList):
         file.close()
 
         return self.alphas
+
+    @classmethod
+    def from_json(cls, chain_json):
+        chain_list = cls("", "")
+
+        for element, fraction in chain_json.items():
+            branch_fraction = float(fraction) / 100.0
+
+            if match := cls.ISOTOPE_PATTERN.match(element):
+                alpha_list = AlphaList(match.group("element"), match.group("isotope"))
+                alpha_list.load_or_fetch()
+                alpha_list.scale_by(branch_fraction)
+
+                chain_list._alpha_lists.append(alpha_list)
+                chain_list.alphas += alpha_list.alphas
+
+        return chain_list
