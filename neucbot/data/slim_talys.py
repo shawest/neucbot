@@ -11,7 +11,7 @@ from neucbot import utils
 from neucbot.data.data_source import NeucbotDataSource
 
 TALYS_SLIM_VERSION = "0.0.1"
-TALYS_SLIM_URL = f"https://github.com/mpiercy827/talys_slim/archive/refs/tags/v{TALYS_SLIM_VERSION}.tar.gz"
+TALYS_SLIM_URL = f"https://github.com/neucbot-datasets/talys_slim/archive/refs/tags/v{TALYS_SLIM_VERSION}.tar.gz"
 TALYS_SLIM_TAR_PATH = "talys_slim.tar.gz"
 TALYS_SLIM_DESTINATION = "./Data"
 
