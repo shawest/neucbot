@@ -175,6 +175,35 @@ else
   rm tmp-acrylic-bi212-alphalist.txt
 fi
 
+################################
+# Bi212 AlphaList - JENDL Data #
+################################
+
+echo
+echo "Running test with JENDL data..."
+echo "-------------------------------"
+echo "Materials/Acrylic.dat"
+echo "AlphaLists/Bi212Alphas.dat"
+echo "DATA SOURCE: jendl-raw"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -o tmp-acrylic-bi212-alphalist.txt --data-source jendl
+diff tmp-acrylic-bi212-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist-jendl.txt
+
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  # rm tmp-acrylic-bi212-alphalist.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-bi212-alphalist.txt
+fi
+
 ############################
 # TALYS Recalculation Test #
 ############################
