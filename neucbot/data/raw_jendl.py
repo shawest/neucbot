@@ -69,12 +69,12 @@ class RawJendlDataSource(NeucbotDataSource):
         return utils.Histogram(spectra)
 
     def download_data(self, version):  # Version not needed, fix this
-        jendl_dir_pattern = os.path.join(
-            self.base_dir, "*", JENDL_OUT_DIR, JENDL_OUT_SUBDIR
+        jendl_data_pattern = os.path.join(
+            self.base_dir, "*", JENDL_OUT_DIR, JENDL_OUT_SUBDIR, "outputE*"
         )
-        jendl_dirs = [d for d in glob.glob(jendl_dir_pattern) if os.path.isdir(d)]
+        jendl_data = glob.glob(jendl_data_pattern)
 
-        if len(jendl_dirs) == 0:
+        if len(jendl_data) == 0:
             print(f"Downloading full JENDL data for {self.element}")
             subprocess.call(
                 f"./Scripts/download_jendl_data.sh {self.element}", shell=True

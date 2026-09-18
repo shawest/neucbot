@@ -74,20 +74,14 @@ class TestRawJendlDataSource(TestCase):
     @patch.object(RawJendlDataSource, "set_cross_sections")
     @patch("subprocess.call")
     @patch("glob.glob", return_value=[])
-    @patch("os.path.isdir", return_value=True)
-    def test_download_data_no_existing_data(
-        self, mock_isdir, mock_glob, mock_call, mock_source
-    ):
+    def test_download_data_no_existing_data(self, mock_glob, mock_call, mock_source):
         mock_call.assert_has_calls([])
         mock_source.assert_has_calls([])
 
     @patch.object(RawJendlDataSource, "set_cross_sections")
     @patch("subprocess.call")
     @patch("glob.glob", return_value=["some_dir"])
-    @patch("os.path.isdir", return_value=True)
-    def test_download_data_existing_data_found(
-        self, mock_isdir, mock_glob, mock_call, mock_source
-    ):
+    def test_download_data_existing_data_found(self, mock_glob, mock_call, mock_source):
         mock_call.assert_has_calls([])
         mock_source.assert_has_calls([])
 
