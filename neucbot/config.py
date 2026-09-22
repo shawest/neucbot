@@ -1,12 +1,14 @@
 import sys
 import shutil
 
+from neucbot.data.raw_jendl import RawJendlDataSource as JendlRaw
 from neucbot.data.raw_talys import RawTalysDataSource as TalysRaw
 from neucbot.data.slim_talys import TalysSlimDataSource as TalysSlim
 
 DATA_SOURCE_REGISTRY = {
     "talys-raw": TalysRaw,
     "talys-slim": TalysSlim,
+    "jendl": JendlRaw,
 }
 
 
@@ -31,7 +33,7 @@ class Config:
         # Raise a RuntimeError if attempting to use data_source = talys-slim with
         # either --talys or --force-recalculation. Opting to use preprocessed
         # data does not allow for TALYS calculations
-        if self.data_source_class == TalysSlim:
+        if self.data_source_class != TalysRaw:
             raise RuntimeError(
                 "Attempting to run TALYS calculations while using preprocessed data. Please rerun without --talys or --force-recalculation."
             )

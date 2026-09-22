@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#
+# This script downloads elements for the V2 dataset, generated with TALYS-1.95
+#
+
+inp=$1
+_ele=${inp%%[0-9]*}
+ele=`echo ${_ele} | tr '[:upper:]' '[:lower:]'`
+ELE=`echo ${_ele} | tr '[:lower:]' '[:upper:]'`
+Ele=${ELE:0:1}${ele:1:10}
+dir=$PWD
+cd ./Data/Isotopes/
+git clone https://github.com/neucbot-datasets/${Ele}_JENDL-5.git
+
+if [[ "$Ele" == "O" || "$Ele" == "F" || "$Ele" == "Na" ]]; then
+  tar -xvjf ./${Ele}_JENDL-5/${Ele}.tar.bz2
+else
+  tar -xvzf ./${Ele}_JENDL-5/${Ele}.tar.gz
+fi
+
+rm -rf ${Ele}_JENDL-5
+cd $dir

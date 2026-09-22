@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 
+from neucbot.config import DATA_SOURCE_REGISTRY
+
 argparser = ArgumentParser(
     prog="neucbot",
     description="NeuCBOT is a tool for calculating (alpha,n) yields and neutron energy spectra for arbitrary materials under alpha exposure for arbitrary lists of alpha energies or in the presence of alpha-emitting contaminants.",
@@ -58,7 +60,7 @@ argparser.add_argument(
 
 argparser.add_argument(
     "--data-source",
-    choices=["talys-raw", "talys-slim"],
+    choices=DATA_SOURCE_REGISTRY.keys(),
     default="talys-slim",
     help="Dataset used during neucbot calculations (options: %(choices)s)",
 )
