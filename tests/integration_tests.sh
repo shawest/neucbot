@@ -205,6 +205,34 @@ else
   rm tmp-acrylic-bi212-alphalist.txt
 fi
 
+#############################################
+# Bi212 AlphaList - Energy Loss Calculation #
+#############################################
+
+echo
+echo "Running test with full energy loss computation..."
+echo "-------------------------------------------------"
+echo "Materials/Acrylic.dat"
+echo "AlphaLists/Bi212Alphas.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -o tmp-acrylic-bi212-energy-loss-alphalist.txt --energy-loss
+diff tmp-acrylic-bi212-energy-loss-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
+
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
+fi
+
 ################################
 # Bi212 AlphaList - JENDL Data #
 ################################
@@ -224,7 +252,7 @@ if [ $? -eq 1 ]; then
   echo
   echo "Test failed" >&2
   echo
-  # rm tmp-acrylic-bi212-alphalist.txt
+  rm tmp-acrylic-bi212-alphalist.txt
 
   exit 1
 else

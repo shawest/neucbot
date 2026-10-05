@@ -5,6 +5,8 @@ from neucbot.data.raw_jendl import RawJendlDataSource as JendlRaw
 from neucbot.data.raw_talys import RawTalysDataSource as TalysRaw
 from neucbot.data.slim_talys import TalysSlimDataSource as TalysSlim
 
+ALPHA_STEP = 0.01  # MeV
+
 DATA_SOURCE_REGISTRY = {
     "talys-raw": TalysRaw,
     "talys-slim": TalysSlim,
@@ -17,6 +19,8 @@ class Config:
         self.talys = args.get("talys")
         self.download = args.get("download")
         self.force_recalculation = args.get("force_recalculation")
+        self.energy_loss_calculation = args.get("energy_loss")
+        self.step_size = args.get("step_size", ALPHA_STEP)
         self.data_source_class = DATA_SOURCE_REGISTRY.get(
             args.get("data_source", "talys-slim")
         )

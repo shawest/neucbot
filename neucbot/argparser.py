@@ -29,6 +29,7 @@ argparser.add_argument(
 # 3. Force recalculation for talys
 # 4. Download missing data
 # 5. Data source to use during calculations
+# 6. Run calculations with alpha energy loss
 ####################
 argparser.add_argument(
     "-s",
@@ -63,6 +64,13 @@ argparser.add_argument(
     choices=DATA_SOURCE_REGISTRY.keys(),
     default="talys-slim",
     help="Dataset used during neucbot calculations (options: %(choices)s)",
+)
+
+argparser.add_argument(
+    "-e",
+    "--energy-loss",
+    action="store_true",
+    help="Perform calculations where alphas lose energy within material",
 )
 
 ###########################

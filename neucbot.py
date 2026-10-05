@@ -36,7 +36,7 @@ def main():
     # Download checks will only download data if it is missing
     material_composition.download_data(args.download)
 
-    runner.run(alpha_list, material_composition, args.step_size)
+    runner.run(alpha_list, material_composition, vars(args))
 
 
 if __name__ == "__main__":
