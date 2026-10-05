@@ -5,7 +5,7 @@ HISTO_MAX_BIN = 20000  # keV
 HISTO_DELTA_BIN = 100  # keV
 
 
-def format_float(number, precision=6):
+def format_float(number, precision=2):
     if number == 0:
         return "0.0"
     else:

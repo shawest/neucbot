@@ -32,13 +32,13 @@ class TestNeucbotRunner(TestCase):
 
         expected = {
             "cross_sections": {
-                "C12": "1.517499e-06",
-                "H1": "9.104992e-06",
-                "O16": "5.690620e-07",
+                "C12": "1.52e-06",
+                "H1": "9.10e-06",
+                "O16": "5.69e-07",
             },
-            "spectra_totals": {1000: "1.119155e+22"},
-            "spectrum_integral": "1.119155e+25",
-            "total_neutron_yield": "1.119155e-05",
+            "spectra_totals": {1000: "1.12e+22"},
+            "spectrum_integral": "1.12e+25",
+            "total_neutron_yield": "1.12e-05",
         }
 
         assert neucbot.run(alpha_list, comp) == expected
