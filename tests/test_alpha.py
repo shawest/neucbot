@@ -197,28 +197,27 @@ class TestAlphaList(TestCase):
 
         condensed_list = alpha_list.condense(0.01)
 
-        assert len(condensed_list) == 610  # Accounting for duplicate first entry
+        assert len(condensed_list) == 609
         assert condensed_list[0] == [approx(6.09), approx(27.12)]
-        assert condensed_list[1] == [approx(6.09), approx(27.12)]
-        assert condensed_list[2] == [approx(6.08), approx(27.12)]
-        assert condensed_list[3] == [approx(6.07), approx(27.12)]
-        assert condensed_list[4] == [approx(6.06), approx(27.12)]
-        assert condensed_list[5] == [approx(6.05), approx(27.12)]
-        assert condensed_list[6] == [approx(6.04), approx(97.03)]
-        assert condensed_list[32] == [approx(5.78), approx(97.03)]
-        assert condensed_list[33] == [approx(5.77), approx(97.03)]
-        assert condensed_list[34] == [approx(5.76), approx(98.73)]
-        assert condensed_list[47] == [approx(5.63), approx(98.73)]
-        assert condensed_list[48] == [approx(5.62), approx(98.887)]
-        assert condensed_list[49] == [approx(5.61), approx(98.887)]
-        assert condensed_list[50] == [approx(5.60), approx(100.017)]
-        assert condensed_list[62] == [approx(5.48), approx(100.017)]
-        assert condensed_list[63] == [approx(5.47), approx(100.030)]
-        assert condensed_list[75] == [approx(5.35), approx(100.030)]
-        assert condensed_list[76] == [approx(5.34), approx(100.031)]
-        assert condensed_list[80] == [approx(5.30), approx(100.031)]
-        assert condensed_list[81] == [approx(5.29), approx(100.03111)]
-        assert condensed_list[609] == [approx(0.01), approx(100.03111)]
+        assert condensed_list[1] == [approx(6.08), approx(27.12)]
+        assert condensed_list[2] == [approx(6.07), approx(27.12)]
+        assert condensed_list[3] == [approx(6.06), approx(27.12)]
+        assert condensed_list[4] == [approx(6.05), approx(27.12)]
+        assert condensed_list[5] == [approx(6.04), approx(97.03)]
+        assert condensed_list[31] == [approx(5.78), approx(97.03)]
+        assert condensed_list[32] == [approx(5.77), approx(97.03)]
+        assert condensed_list[33] == [approx(5.76), approx(98.73)]
+        assert condensed_list[46] == [approx(5.63), approx(98.73)]
+        assert condensed_list[47] == [approx(5.62), approx(98.887)]
+        assert condensed_list[48] == [approx(5.61), approx(98.887)]
+        assert condensed_list[49] == [approx(5.60), approx(100.017)]
+        assert condensed_list[61] == [approx(5.48), approx(100.017)]
+        assert condensed_list[62] == [approx(5.47), approx(100.030)]
+        assert condensed_list[74] == [approx(5.35), approx(100.030)]
+        assert condensed_list[75] == [approx(5.34), approx(100.031)]
+        assert condensed_list[79] == [approx(5.30), approx(100.031)]
+        assert condensed_list[80] == [approx(5.29), approx(100.03111)]
+        assert condensed_list[608] == [approx(0.01), approx(100.03111)]
 
 
 class TestChainAlphaList(TestCase):
@@ -294,10 +293,10 @@ class TestChainAlphaList(TestCase):
 
         condensed_list = chain_list.condense(0.01)
 
-        assert len(condensed_list) == 879
+        assert len(condensed_list) == 878
         assert condensed_list[0] == [approx(8.78), approx(64.06)]
-        assert condensed_list[1] == [approx(8.78), approx(64.06)]
-        assert condensed_list[878] == [approx(0.01), approx(600.0399365339999)]
+        assert condensed_list[1] == [approx(8.77), approx(64.06)]
+        assert condensed_list[877] == [approx(0.01), approx(600.0399365339999)]
 
     def test_from_json(self):
         request_chain = {
