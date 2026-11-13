@@ -119,9 +119,7 @@ class AlphaList:
         alpha_index = 0
         max_index = len(sorted_alphas) - 1
 
-        # This will create a duplicate entry for [max_alpha, max_alpha_intensity]
-        # in the condensed alpha list. This is here intentionally.
-        condensed_alphas = [[max_alpha, cumulative_intensities[alpha_index]]]
+        condensed_alphas = []
 
         for step in alpha_steps:
             # If the alpha step is LESS THAN the next alpha energy (rounded to 2

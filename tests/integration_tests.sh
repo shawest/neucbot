@@ -146,6 +146,36 @@ else
   rm tmp-acrylic-bi212-alphalist.txt
 fi
 
+############################
+# Rn220 + Copper AlphaList #
+############################
+
+# This test was introduced when removing the duplicated max alpha energy from
+# the start of the condensed alpha list.
+echo
+echo "Running test..."
+echo "---------------------"
+echo "Materials/Copper.dat"
+echo "AlphaLists/Rn220Alphas.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Copper.dat -l AlphaLists/Rn220Alphas.dat -o tmp-copper-rn220-alphalist.txt
+diff tmp-copper-rn220-alphalist.txt tests/integration_tests/copper-rn220-alphalist.txt
+
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-copper-rn220-alphalist.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-copper-rn220-alphalist.txt
+fi
+
 ##############################
 # Bi212 AlphaList - Raw Data #
 ##############################
