@@ -27,6 +27,9 @@ class Histogram:
     def keys(self):
         return list(self.histo.keys())
 
+    def items(self):
+        return list(self.histo.items())
+
     def get(self, key):
         return self.histo[key]
 
@@ -50,24 +53,24 @@ class Histogram:
         norms = {}
         sorted_histo = sorted(self.histo)
 
-        for i in sorted_histo:
-            index = sorted_histo.index(i)
-            # Get the spacing between points
-            delta = sorted_histo[0]
-            if index > 0:
-                delta = sorted_histo[index] - sorted_histo[index - 1]
+        previous_bin = None
+        for current_bin in sorted_histo:
+            delta = current_bin if previous_bin is None else current_bin - previous_bin
+            previous_bin = current_bin
 
             # If the x value is too low, put it in the underflow bin (-1)
-            if i < min_bin:
+            if current_bin < min_bin:
                 new_bin = -1
             # ...or the overflow bin if too high
-            elif i > max_bin:
+            elif current_bin > max_bin:
                 new_bin = int(bin_count + 10 * step)
             # Otherwise, calculate the new bin
             else:
-                new_bin = int(min_bin + int((i - min_bin) / step) * step)
+                new_bin = int(min_bin + int((current_bin - min_bin) / step) * step)
 
-            rebinned[new_bin] = rebinned.get(new_bin, 0) + self.histo[i] * delta
+            rebinned[new_bin] = (
+                rebinned.get(new_bin, 0) + self.histo[current_bin] * delta
+            )
             norms[new_bin] = norms.get(new_bin, 0) + delta
 
         # Renormalize the new histogram
