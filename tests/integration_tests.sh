@@ -209,8 +209,8 @@ fi
 #############################################
 
 echo
-echo "Running test..."
-echo "---------------------"
+echo "Running test with full energy loss computation..."
+echo "-------------------------------------------------"
 echo "Materials/Acrylic.dat"
 echo "Chains/Th232Chain.dat"
 echo
