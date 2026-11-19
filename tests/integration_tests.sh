@@ -176,6 +176,64 @@ else
   rm tmp-copper-rn220-alphalist.txt
 fi
 
+#############################################
+# Bi212 AlphaList - Energy Loss Calculation #
+#############################################
+
+echo
+echo "Running test with full energy loss computation..."
+echo "-------------------------------------------------"
+echo "Materials/Acrylic.dat"
+echo "AlphaLists/Bi212Alphas.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -o tmp-acrylic-bi212-energy-loss-alphalist.txt --energy-loss
+diff tmp-acrylic-bi212-energy-loss-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
+
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
+fi
+
+#############################################
+# Th232 ChainList - Energy Loss Calculation #
+#############################################
+
+echo
+echo "Running test..."
+echo "---------------------"
+echo "Materials/Acrylic.dat"
+echo "Chains/Th232Chain.dat"
+echo
+
+python3 ./neucbot.py -m Materials/Acrylic.dat -c Chains/Th232Chain.dat -o tmp-acrylic-th232-chain-energy-loss.txt --energy-loss
+diff tmp-acrylic-th232-chain-energy-loss.txt tests/integration_tests/acrylic-th232-chain.txt
+
+# If the previous diff command generated any differences, the exit code will be 1
+# and this will be considered a test failure.
+if [ $? -eq 1 ]; then
+  echo
+  echo "Test failed" >&2
+  echo
+  rm tmp-acrylic-th232-chain-energy-loss.txt
+
+  exit 1
+else
+  echo
+  echo "Test passed"
+  echo
+  rm tmp-acrylic-th232-chain-energy-loss.txt
+fi
+
 ##############################
 # Bi212 AlphaList - Raw Data #
 ##############################
@@ -203,34 +261,6 @@ else
   echo "Test passed"
   echo
   rm tmp-acrylic-bi212-alphalist.txt
-fi
-
-#############################################
-# Bi212 AlphaList - Energy Loss Calculation #
-#############################################
-
-echo
-echo "Running test with full energy loss computation..."
-echo "-------------------------------------------------"
-echo "Materials/Acrylic.dat"
-echo "AlphaLists/Bi212Alphas.dat"
-echo
-
-python3 ./neucbot.py -m Materials/Acrylic.dat -l AlphaLists/Bi212Alphas.dat -o tmp-acrylic-bi212-energy-loss-alphalist.txt --energy-loss
-diff tmp-acrylic-bi212-energy-loss-alphalist.txt tests/integration_tests/acrylic-bi212-alphalist.txt
-
-if [ $? -eq 1 ]; then
-  echo
-  echo "Test failed" >&2
-  echo
-  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
-
-  exit 1
-else
-  echo
-  echo "Test passed"
-  echo
-  rm tmp-acrylic-bi212-energy-loss-alphalist.txt
 fi
 
 ################################
