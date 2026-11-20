@@ -1,5 +1,7 @@
 import numpy
 
+from collections import defaultdict
+
 from tqdm import tqdm
 from neucbot import alpha
 from neucbot import config
@@ -69,8 +71,8 @@ class NeucbotRunner:
         return self.print_outputs(outputs)
 
     def _run_with_energy_loss(self, alpha_list, material_composition):
-        spec_totals = {}
         cross_sections = {}
+        spec_totals = {}
         total_cross_section = 0
 
         # Variables specific to the energy loss calculation
@@ -82,50 +84,37 @@ class NeucbotRunner:
         alpha_energy_steps = alpha_list.alpha_steps(self.config.step_size)
         max_alpha = alpha_energy_steps[0]
 
+        precomputed = self.precompute_energy_step_values(
+            alpha_energy_steps, material_composition
+        )
+
         for [alpha_energy, intensity] in tqdm(alpha_list.alphas):
             rounded_alpha_energy = utils.round_half_up(alpha_energy)
+            scaled_intensity = intensity / 100.0
 
             for energy in alpha_energy_steps:
                 # Only start counting for steps at or below this alpha_energy
                 if rounded_alpha_energy != max_alpha and energy >= rounded_alpha_energy:
                     continue
 
-                stopping_power = material_composition.stopping_power(energy)
+                delta = round(alpha_energy - energy, 2)
 
                 for material in material_composition.materials:
-                    mat_term = material.material_term()
                     mat_name = material.name()
 
-                    # Get alpha n spectrum for this alpha and this target
-                    spec = material.differential_n_spec(
-                        energy, self.config.talys, self.config.force_recalculation
-                    ).rebin()
-
-                    # Add this spectrum to the total spectrum
-                    delta_ea = (
-                        energy
-                        if self.config.step_size > energy
-                        else self.config.step_size
+                    xsect = (
+                        scaled_intensity
+                        * precomputed["cross_sections"][mat_name][energy]
                     )
-                    prefactors = (
-                        (intensity / 100.0) * mat_term * delta_ea / stopping_power
-                    )
-                    xsect = prefactors * material.cross_section(energy)
                     total_cross_section += xsect
 
                     cross_sections[mat_name] = cross_sections.get(mat_name, 0) + xsect
 
-                    delta = round(alpha_energy - energy, 2)
-
-                    for e in spec.keys():
-                        energy_spec = prefactors * spec.get(e)
-
-                        spec_totals[e] = spec_totals.get(e, 0) + energy_spec
-
-                        alpha_n_spec[e] = alpha_n_spec.get(e, {})
-                        alpha_n_spec[e][delta] = (
-                            alpha_n_spec[e].get(delta, 0) + energy_spec
-                        )
+                for e, value in precomputed["spectra"][energy].items():
+                    energy_spec = scaled_intensity * value
+                    spec_totals[e] = spec_totals.get(e, 0) + energy_spec
+                    alpha_n_spec[e] = alpha_n_spec.get(e, {})
+                    alpha_n_spec[e][delta] = alpha_n_spec[e].get(delta, 0) + energy_spec
 
         spectrum_integral = utils.Histogram(spec_totals).integrate()
 
@@ -179,6 +168,41 @@ class NeucbotRunner:
         }
 
         return self.print_outputs(outputs)
+
+    def precompute_energy_step_values(self, alpha_energy_steps, material_composition):
+        cross_sections = defaultdict(dict)
+        spectra = {}
+
+        for energy in alpha_energy_steps:
+            stopping_power = material_composition.stopping_power(energy)
+            delta = energy if self.config.step_size > energy else self.config.step_size
+
+            energy_step_spectra = defaultdict(float)
+
+            for material in material_composition.materials:
+                mat_term = material.material_term()
+                mat_name = material.name()
+
+                prefactor = mat_term * delta / stopping_power
+                spec = material.differential_n_spec(
+                    energy, self.config.talys, self.config.force_recalculation
+                ).rebin()
+
+                for e, value in spec.items():
+                    energy_step_spectra[e] += prefactor * value
+
+                cross_sections[mat_name][energy] = prefactor * material.cross_section(
+                    energy
+                )
+
+            spectra[energy] = dict(energy_step_spectra)
+
+        return {
+            "cross_sections": dict(
+                cross_sections
+            ),  # These do not have per-alpha intensities
+            "spectra": dict(spectra),
+        }
 
     def print_outputs(self, outputs):
         # Return early without printing outputs if this is in a web context
