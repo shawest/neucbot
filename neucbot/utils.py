@@ -35,16 +35,14 @@ class Histogram:
 
     def integrate(self):
         integral = 0
-        sorted_keys = sorted(self.histo)
+        sorted_bins = sorted(self.histo)
 
-        for i in sorted_keys:
-            # Get the bin width
-            if index := sorted_keys.index(i) > 0:
-                delta = sorted_keys[index] - sorted_keys[index - 1]
-            else:
-                delta = sorted_keys[0]
+        previous_bin = None
+        for current_bin in sorted_bins:
+            delta = current_bin if previous_bin is None else current_bin - previous_bin
+            previous_bin = current_bin
 
-            integral += self.histo[i] * delta
+            integral += self.histo[current_bin] * delta
         return integral
 
     def rebin(self, step=HISTO_DELTA_BIN, min_bin=HISTO_MIN_BIN, max_bin=HISTO_MAX_BIN):

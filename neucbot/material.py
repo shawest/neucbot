@@ -157,9 +157,6 @@ class Composition:
 
             self.stopping_powers[element] = stop_power_list
 
-    def empty(self):
-        return len(self.materials) == 0
-
     def add(self, material_element):
         element = elements.Element(material_element["element"])
         mass_number = int(material_element["mass_number"])

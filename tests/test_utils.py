@@ -42,6 +42,18 @@ class TestHistogram(TestCase):
     def test_integrate(self):
         assert self.histogram.integrate() == 1500
 
+    def test_integrate_unequal_bins(self):
+        histogram = utils.Histogram(
+            {
+                100: 1,
+                200: 2,
+                400: 4,
+                500: 5,
+            }
+        )
+
+        assert histogram.integrate() == 1600
+
     def test_to_dict(self):
         assert self.histogram.to_dict() == {
             100: 1,
